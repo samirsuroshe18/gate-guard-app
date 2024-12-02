@@ -1,0 +1,98 @@
+{
+  "project_info": {
+    "project_number": "37312603811",
+    "project_id": "gateguard-65994",
+    "storage_bucket": "gateguard-65994.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:37312603811:android:28fc2d76a594dc5b8ac116",
+        "android_client_info": {
+          "package_name": "com.example.gate_guard"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "37312603811-i8afrq9cvulqemko5m252l8asrtcb9bn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.gate_guard",
+            "certificate_hash": "3b08a7ab90c30c6ec9feae0cf92f41ff1fb6e47b"
+          }
+        },
+        {
+          "client_id": "37312603811-fs5ip1juj8a48roue2mdj6jvmaq02auj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgp3poP7q6jA6DzldLeBwQOH12lkLItUM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "37312603811-fs5ip1juj8a48roue2mdj6jvmaq02auj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "37312603811-d358latruttsml15m4jnc20j3vstuk3a.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.gateGuard"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:37312603811:android:d99b98eba84264e58ac116",
+        "android_client_info": {
+          "package_name": "com.example.water_level_indicator"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "37312603811-rfhnoi4sae9m0rukhleucpp5e87mm578.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.water_level_indicator",
+            "certificate_hash": "3b08a7ab90c30c6ec9feae0cf92f41ff1fb6e47b"
+          }
+        },
+        {
+          "client_id": "37312603811-fs5ip1juj8a48roue2mdj6jvmaq02auj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgp3poP7q6jA6DzldLeBwQOH12lkLItUM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "37312603811-fs5ip1juj8a48roue2mdj6jvmaq02auj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "37312603811-d358latruttsml15m4jnc20j3vstuk3a.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.gateGuard"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
