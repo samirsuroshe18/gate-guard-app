@@ -1,5 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gate_guard/features/auth/models/get_user_model.dart';
+import 'package:gate_guard/features/guard_profile/bloc/guard_profile_bloc.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+
+import '../../auth/bloc/auth_bloc.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final GetUserModel? data;
@@ -12,11 +20,13 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final TextEditingController _nameController = TextEditingController();
   String profileImage = "";
+  File? _selectedImage;
+  bool _isLoading = false;
 
   @override
   void dispose() {
-    super.dispose();
     _nameController.dispose();
+    super.dispose();
   }
 
   @override
@@ -26,73 +36,232 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     profileImage = widget.data?.profile ?? "";
   }
 
+  Future<void> _pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: source);
+
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+        profileImage = ""; // Clear network image to show selected image
+      });
+    }
+  }
+
+  Future<void> _saveChanges() async {
+    if(widget.data?.userName == _nameController.text && _selectedImage == null){
+      _handleError("No changes were made.");
+      return;
+    }
+    context.read<GuardProfileBloc>().add(GuardUpdateDetails(userName: _nameController.text, profile: _selectedImage));
+  }
+
+  void _showImageSourceDialog() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Choose an option",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 15),
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Take Picture'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo),
+                title: const Text('Choose from Gallery'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.blueAccent,
         title: const Text(
           "Edit Profile",
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: Colors.white,
+          ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Stack(
-                clipBehavior: Clip.none, // to allow icon to be outside the image
-                children: [
-                  const CircleAvatar(
-                    radius: 50,
-                    backgroundImage: AssetImage('assets/profile_image.png'), // Replace with your image
+      body: BlocConsumer<GuardProfileBloc, GuardProfileState>(
+        listener: (context, state){
+          if(state is GuardUpdateDetailsLoading){
+            _isLoading = true;
+          }
+          if(state is GuardUpdateDetailsSuccess){
+            _isLoading = false;
+            _handleSuccess(state.response['message']);
+            context.read<AuthBloc>().add(AuthGetUser());
+            Navigator.of(context).pop();
+          }
+          if(state is GuardUpdateDetailsFailure){
+            _isLoading = false;
+            _handleError(state.message);
+          }
+        },
+        builder: (context, state){
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Profile Picture Section
+                Center(
+                  child: Stack(
+                    alignment: Alignment.center,
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: CircleAvatar(
+                          radius: 60,
+                          backgroundColor: Colors.white,
+                          backgroundImage: _selectedImage != null
+                              ? FileImage(_selectedImage!)
+                              : profileImage.isNotEmpty
+                              ? NetworkImage(profileImage) as ImageProvider
+                              : const AssetImage('assets/images/profile.png'),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: -4,
+                        child: GestureDetector(
+                          onTap: _showImageSourceDialog,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: const CircleAvatar(
+                              radius: 20,
+                              backgroundColor: Colors.blueAccent,
+                              child: Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: CircleAvatar(
-                      radius: 50.0,
-                      backgroundImage: profileImage.isEmpty
-                          ? const AssetImage('assets/images/profile.png')
-                          : NetworkImage(profileImage),
+                ),
+                const SizedBox(height: 30),
+                // Name Field Label
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Full Name",
+                    style: TextStyle(
+                      color: Colors.grey[800],
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
                     ),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            // Name Field
-            TextFormField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Colors.grey),
                 ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            // Save Change Button
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                const SizedBox(height: 8),
+                // Name Input Field
+                TextFormField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    hintText: "Enter your name",
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.blueAccent),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  style: const TextStyle(fontSize: 16),
                 ),
-              ),
-              child: const Text(
-                'Saved Change',
-                style: TextStyle(color: Colors.white, fontSize: 16),
-              ),
+                const SizedBox(height: 30),
+                // Save Changes Button
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _saveChanges,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xff448EE4),
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    elevation: 10,
+                    shadowColor: Colors.blueGrey.shade200,
+                  ),
+                  child: Center(
+                    child: _isLoading
+                        ? CircularProgressIndicator(
+                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.blueAccent),
+                      backgroundColor: Colors.grey[200],
+                      strokeWidth: 5.0,)
+                        : const Text('Save Changes', style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
+                  ),
+                )
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
+    );
+  }
+
+  void _handleSuccess(String message) {
+    _showSnackBar(message, Colors.green);
+  }
+
+  void _handleError(String message) {
+    _showSnackBar(message, Colors.redAccent);
+  }
+
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: color),
     );
   }
 }

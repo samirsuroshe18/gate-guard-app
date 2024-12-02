@@ -6,6 +6,7 @@ import 'package:gate_guard/features/administration/bloc/administration_bloc.dart
 import 'package:gate_guard/features/check_in/bloc/check_in_bloc.dart';
 import 'package:gate_guard/features/guard_entry/bloc/guard_entry_bloc.dart';
 import 'package:gate_guard/features/guard_exit/bloc/guard_exit_bloc.dart';
+import 'package:gate_guard/features/guard_profile/bloc/guard_profile_bloc.dart';
 import 'package:gate_guard/features/guard_waiting/bloc/guard_waiting_bloc.dart';
 import 'package:gate_guard/features/invite_visitors/bloc/invite_visitors_bloc.dart';
 import 'package:gate_guard/features/my_visitors/bloc/my_visitors_bloc.dart';
@@ -59,6 +60,9 @@ void main() async {
             ),
             BlocProvider(
               create: (_) => serviceLocator<MyVisitorsBloc>(),
+            ),
+            BlocProvider(
+              create: (_) => serviceLocator<GuardProfileBloc>(),
             ),
           ],
           child: const MyApp()

@@ -6,6 +6,8 @@ import 'package:gate_guard/features/guard_entry/bloc/guard_entry_bloc.dart';
 import 'package:gate_guard/features/guard_entry/repository/guard_entry_repository.dart';
 import 'package:gate_guard/features/guard_exit/bloc/guard_exit_bloc.dart';
 import 'package:gate_guard/features/guard_exit/repository/guard_exit_repository.dart';
+import 'package:gate_guard/features/guard_profile/bloc/guard_profile_bloc.dart';
+import 'package:gate_guard/features/guard_profile/repository/guard_profile_repository.dart';
 import 'package:gate_guard/features/guard_waiting/bloc/guard_waiting_bloc.dart';
 import 'package:gate_guard/features/guard_waiting/repository/guard_waiting_repository.dart';
 import 'package:gate_guard/features/invite_visitors/bloc/invite_visitors_bloc.dart';
@@ -28,6 +30,7 @@ Future<void> initDependencies()async {
   _initGuardExit();
   _initInviteVisitor();
   _initMyVisitor();
+  _initGuardProfile();
 }
 
 void _initAuth(){
@@ -68,4 +71,9 @@ void _initInviteVisitor(){
 void _initMyVisitor(){
   serviceLocator.registerLazySingleton<MyVisitorsRepository>(() => MyVisitorsRepository());
   serviceLocator.registerLazySingleton(()=> MyVisitorsBloc(myVisitorsRepository: serviceLocator()));
+}
+
+void _initGuardProfile(){
+  serviceLocator.registerLazySingleton<GuardProfileRepository>(() => GuardProfileRepository());
+  serviceLocator.registerLazySingleton(()=> GuardProfileBloc(guardProfileRepository: serviceLocator()));
 }
