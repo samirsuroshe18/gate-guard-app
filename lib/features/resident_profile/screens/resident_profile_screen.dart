@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gate_guard/features/auth/bloc/auth_bloc.dart';
+import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../auth/bloc/auth_bloc.dart';
+import '../../auth/models/get_user_model.dart';
 
 class ResidentProfileScreen extends StatefulWidget {
   const ResidentProfileScreen({super.key});
@@ -12,15 +14,19 @@ class ResidentProfileScreen extends StatefulWidget {
 }
 
 class _ResidentProfileScreenState extends State<ResidentProfileScreen> {
-  String username = "loading...";
-  String apartment = "Apartment ...";
-  String block = "Block ...";
-  String passcode = "loading...";
-  String profileImage = "";
+  late SharedPreferences _prefs;
+  GetUserModel? data;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    _prefs = await SharedPreferences.getInstance();
+    if(!mounted) return;
     context.read<AuthBloc>().add(AuthGetUser());
   }
 
@@ -29,157 +35,266 @@ class _ResidentProfileScreenState extends State<ResidentProfileScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: BlocConsumer<AuthBloc, AuthState>(
-        listener: (context, state){
-          if(state is AuthGetUserSuccess){
-            username = state.response.userName!;
-            apartment = 'Apartment ${state.response.apartment!}';
-            block = 'Block ${state.response.societyBlock!}';
-            profileImage = state.response.profile!;
-            passcode = state.response.checkInCode!;
+        listener: (context, state) {
+          if (state is AuthGetUserLoading) {
+            _isLoading = true;
+          }
+          if (state is AuthGetUserSuccess) {
+            _isLoading = false;
+            data = state.response;
+          }
+          if (state is AuthGetUserFailure) {
+            _isLoading = false;
           }
         },
-        builder: (context, state){
-          return SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Profile Section
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade100,
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(40),
-                      bottomRight: Radius.circular(40),
-                    ),
-                  ),
-                  child: Column(
+        builder: (context, state) {
+          if(data != null && _isLoading == false) {
+            return RefreshIndicator(
+              onRefresh: _refreshUserData,  // Method to refresh user data
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Profile Image
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundImage: profileImage.isEmpty ? const AssetImage('assets/images/profile.png') : NetworkImage(profileImage),
-                      ),
-                      const SizedBox(height: 15),
-                      // Username
-                      Text(
-                        username,
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue.shade900,
-                        ),
-                      ),
-                      const SizedBox(height: 5),
-                      // Flat Name
-                      RichText(
-                        text: TextSpan(
+                      Center(
+                        child: Column(
                           children: [
-                            TextSpan(
-                              text: block,
+                            CircleAvatar(
+                              radius: 50.0,
+                              backgroundImage: data?.profile == null
+                                  ? const AssetImage('assets/images/profile.png')
+                                  : NetworkImage(data!.profile!),
+                            ),
+                            const SizedBox(height: 14),
+                            Text(
+                              data?.userName ?? "NA",
                               style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                                fontSize: 18,
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.bold,
+                                  overflow: TextOverflow.ellipsis
                               ),
                             ),
-                            const TextSpan(
-                              text: ' - ',
-                              style: TextStyle(
+                            const SizedBox(height: 2),
+                            Text(
+                              data?.email ?? "NA",
+                              style: const TextStyle(
+                                fontSize: 16,
                                 color: Colors.grey,
-                                fontSize: 18,
                               ),
                             ),
-                            TextSpan(
-                              text: apartment,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                                fontSize: 18,
+                            const SizedBox(height: 14),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/edit-profile-screen', arguments: data);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(45),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 18)
+                              ),
+                              child: const Text(
+                                'Edit profile',
+                                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w400),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 5),
-                      // 6-digit Passcode
+                      const SizedBox(height: 30),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.shade300,
-                              blurRadius: 5,
-                              spreadRadius: 2,
-                              offset: const Offset(2, 4),
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          "Passcode: $passcode",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.blue.shade900,
+                          color: const Color(0xFFD1F0FF),
+                          borderRadius: BorderRadius.circular(25),
+                          border: Border.all(
+                            color: const Color(0xFFE1E1E1), // Border color
+                            width: 2, // Border width
                           ),
                         ),
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.only(bottom: 6),
+                              child: ListTile(
+                                leading: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: Colors.white
+                                    ),
+                                    child: const Icon(
+                                      Icons.door_sliding_outlined,
+                                      color: Color(0xFF5B5B5B),
+                                    )),
+                                title: Text(
+                                  'Block ${data?.societyBlock?.toUpperCase() ?? "NA"}, Apartment ${data?.apartment ?? "NA"}',
+                                  style: const TextStyle(color: Color(0xFF272727), fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: const Divider(height: 2),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.only(bottom: 6),
+                              child: ListTile(
+                                leading: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: Colors.white
+                                    ),
+                                    child: const Icon(
+                                      Icons.lock,
+                                      color: Color(0xFF5B5B5B),
+                                    )),
+                                title: Text(
+                                  'Passcode : ${data?.checkInCode ?? "NA"}',
+                                  style: const TextStyle(color: Color(0xFF272727), fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: const Divider(height: 2),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.only(bottom: 6),
+                              child: ListTile(
+                                leading: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: Colors.white
+                                    ),
+                                    child: const Icon(
+                                      Icons.group,
+                                      color: Color(0xFF5B5B5B),
+                                    )),
+                                title: const Text(
+                                  'Apartment Members',
+                                  style: TextStyle(color: Color(0xFF272727), fontWeight: FontWeight.w500),
+                                ),
+                                trailing: const Icon(Icons.arrow_forward_ios,
+                                  size: 16,
+                                  color: Color(0xFF5B5B5B),),
+                                onTap: () {
+                                  Navigator.pushNamed(context, '/apartment-member-screen');
+                                },
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: const Divider(height: 2),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.only(bottom: 6),
+                              child: ListTile(
+                                leading: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(10)
+                                    ),
+                                    child: const Icon(
+                                      Icons.settings,
+                                      color: Color(0xFF5B5B5B),
+                                    )),
+                                title: const Text(
+                                  'Settings',
+                                  style: TextStyle(color: Color(0xFF272727), fontWeight: FontWeight.w500),
+                                ),
+                                trailing: const Icon(Icons.arrow_forward_ios,
+                                  size: 16,
+                                  color: Color(0xFF5B5B5B),),
+                                onTap: () {
+                                  Navigator.pushNamed(context, '/setting-screen',);
+                                },
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: const Divider(height: 2),
+                            ),
+                            ListTile(
+                              leading: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                      color: const Color(0x2FB74343),
+                                      borderRadius: BorderRadius.circular(10)
+                                  ),
+                                  child: const Icon(
+                                    Icons.logout,
+                                    color: Color(0xFFAD3232),
+                                  )),
+                              title: const Text(
+                                'Logout',
+                                style: TextStyle(color: Color(0xFFB74343), fontWeight: FontWeight.w500),
+                              ),
+                              onTap: _logoutUser,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ]
+                ),
+              ),
+            );
+          } else if (_isLoading) {
+            return Center(
+              child: Lottie.asset(
+                'assets/animations/loader.json',
+                width: 100,
+                height: 100,
+                fit: BoxFit.contain,
+              ),
+            );
+          }else {
+            return RefreshIndicator(
+              onRefresh: _refreshUserData,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Container(
+                  height: MediaQuery.of(context).size.height - 200,
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Lottie.asset(
+                        'assets/animations/error.json',
+                        width: 200,
+                        height: 200,
+                        fit: BoxFit.cover,
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        "Something went wrong!",
+                        style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
-                // Option List Section
-                ListTile(
-                  leading: const Icon(Icons.person, color: Colors.blue),
-                  title: const Text('My Details', style: TextStyle(fontSize: 18)),
-                  onTap: () {
-                    // Navigate to My Details page
-                  },
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.home, color: Colors.blue),
-                  title: const Text('My Flats', style: TextStyle(fontSize: 18)),
-                  onTap: () {
-                    // Navigate to My Flats page
-                  },
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.group, color: Colors.blue),
-                  title: const Text('Apartment Members', style: TextStyle(fontSize: 18)),
-                  onTap: () {
-                    // Navigate to Apartment Members page
-                  },
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.settings, color: Colors.blue),
-                  title: const Text('Settings', style: TextStyle(fontSize: 18)),
-                  onTap: () {
-                    // Navigate to Settings page
-                  },
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.logout, color: Colors.redAccent),
-                  title: const Text('Logout', style: TextStyle(fontSize: 18)),
-                  onTap: _logoutUser,
-                ),
-                const Divider(height: 1),
-              ],
-            ),
-          );
+              ),
+            );
+          }
         },
-      )
+      ),
     );
   }
 
-  void _logoutUser() {
-    showDialog(
-      context: context,
+  Future<void> _refreshUserData() async {
+    context.read<AuthBloc>().add(AuthGetUser());
+  }
+
+  Future<void> _logoutUser() async {
+    if(!mounted) return;
+
+    showDialog(context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Confirm Logout'),
@@ -199,9 +314,7 @@ class _ResidentProfileScreenState extends State<ResidentProfileScreen> {
                   return TextButton(
                     child: const Text('Logout'),
                     onPressed: () {
-                      context.read<AuthBloc>().add(
-                        AuthLogout(),
-                      );
+                      context.read<AuthBloc>().add(AuthLogout());
                     },
                   );
                 }else if (state is AuthLogoutSuccess) {
@@ -232,13 +345,10 @@ class _ResidentProfileScreenState extends State<ResidentProfileScreen> {
   }
 
   Future<void> removeAccessToken() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove("accessToken");
-    await prefs.remove("refreshMode");
+    await _prefs.remove("accessToken");
+    await _prefs.remove("refreshMode");
 
-    // Check if the widget is still mounted before using context
     if (!mounted) return;
-
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Logged out')),
     );

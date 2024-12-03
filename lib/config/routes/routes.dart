@@ -34,6 +34,7 @@ import 'package:gate_guard/features/administration/screens/resident_approval_scr
 import 'package:gate_guard/features/auth/screens/complete_profile_screen.dart';
 import 'package:gate_guard/features/invite_visitors/screens/otp_banner.dart';
 import 'package:gate_guard/features/my_visitors/screens/past_visitors_screen.dart';
+import 'package:gate_guard/features/resident_profile/screens/apartment_members_screen.dart';
 import 'package:gate_guard/features/setting/screens/change_password_screen.dart';
 import 'package:gate_guard/features/setting/screens/setting_screen.dart';
 
@@ -126,6 +127,8 @@ class AppRoutes {
         return _materialRoute( const SettingScreen());
       case '/checkout-history-screen':
         return _materialRoute( const CheckoutHistoryScreen());
+      case '/apartment-member-screen':
+        return _materialRoute( const ApartmentMembersScreen());
       default:
         return _materialRoute(const SplashScreen());
     }

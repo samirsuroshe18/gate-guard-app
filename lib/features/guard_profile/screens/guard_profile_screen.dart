@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gate_guard/features/auth/models/get_user_model.dart';
+import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../auth/bloc/auth_bloc.dart';
@@ -14,11 +15,7 @@ class GuardProfileScreen extends StatefulWidget {
 
 class _GuardProfileScreenState extends State<GuardProfileScreen> {
   GetUserModel? data;
-  String userName = "loading...";
-  String email = "loading...";
-  String gateName = "loading...";
-  String passcode = "loading...";
-  String profileImage = "";
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -29,245 +26,268 @@ class _GuardProfileScreenState extends State<GuardProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.blue,
-          title: const Text(
-            "Profile",
-            style: TextStyle(color: Colors.white),
-          ),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.blue,
+        title: const Text(
+          "Profile",
+          style: TextStyle(color: Colors.white),
         ),
-        body: BlocConsumer<AuthBloc, AuthState>(
+      ),
+      body: BlocConsumer<AuthBloc, AuthState>(
           listener: (context, state) {
+            if (state is AuthGetUserLoading) {
+              _isLoading = true;
+            }
             if (state is AuthGetUserSuccess) {
+              _isLoading = false;
               data = state.response;
-              userName = state.response.userName ?? '';
-              email = state.response.email ?? '';
-              gateName = state.response.gateAssign ?? '';
-              profileImage = state.response.profile ?? '';
-              passcode = state.response.checkInCode ?? '';
+            }
+            if (state is AuthGetUserFailure) {
+              _isLoading = false;
             }
           },
           builder: (context, state) {
-            return RefreshIndicator(
-              onRefresh: _refreshData,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Column(
-                          children: [
-                            CircleAvatar(
-                              radius: 50.0,
-                              backgroundImage: profileImage.isEmpty
-                                  ? const AssetImage('assets/images/profile.png')
-                                  : NetworkImage(profileImage),
-                            ),
-                            const SizedBox(height: 14),
-                            Text(
-                              userName,
-                              style: const TextStyle(
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.bold,
-                                  overflow: TextOverflow.ellipsis
+            if(data != null && _isLoading == false){
+              return RefreshIndicator(
+                onRefresh: _refreshData,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Center(
+                          child: Column(
+                            children: [
+                              CircleAvatar(
+                                radius: 50.0,
+                                backgroundImage: data?.profile == null
+                                    ? const AssetImage('assets/images/profile.png')
+                                    : NetworkImage(data!.profile!),
                               ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              email,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey,
+                              const SizedBox(height: 14),
+                              Text(
+                                data?.userName ?? "NA",
+                                style: const TextStyle(
+                                    fontSize: 25,
+                                    fontWeight: FontWeight.bold,
+                                    overflow: TextOverflow.ellipsis
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 14),
-                            ElevatedButton(
-                              onPressed: () {
-                                Navigator.pushNamed(context, '/edit-profile-screen', arguments: data);
-                              },
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(45),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 18)
+                              const SizedBox(height: 2),
+                              Text(
+                                data?.email ?? "NA",
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey,
+                                ),
                               ),
-                              child: const Text(
-                                'Edit profile',
-                                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w400),
+                              const SizedBox(height: 14),
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pushNamed(context, '/edit-profile-screen', arguments: data);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(45),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 18)
+                                ),
+                                child: const Text(
+                                  'Edit profile',
+                                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w400),
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 30),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFD1F0FF),
-                          borderRadius: BorderRadius.circular(25),
-                          border: Border.all(
-                            color: const Color(0xFFE1E1E1), // Border color
-                            width: 2, // Border width
+                            ],
                           ),
                         ),
-                        child: Column(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.only(bottom: 6),
-                              child: ListTile(
-                                leading: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(10),
-                                        color: Colors.white
-                                    ),
-                                    child: const Icon(
-                                      Icons.door_sliding_outlined,
-                                      color: Color(0xFF5B5B5B),
-                                    )),
-                                title: Text(
-                                  'Gate : ${gateName.toUpperCase()}',
-                                  style: const TextStyle(color: Color(0xFF272727), fontWeight: FontWeight.w500),
+                        const SizedBox(height: 30),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFD1F0FF),
+                            borderRadius: BorderRadius.circular(25),
+                            border: Border.all(
+                              color: const Color(0xFFE1E1E1), // Border color
+                              width: 2, // Border width
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.only(bottom: 6),
+                                child: ListTile(
+                                  leading: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(10),
+                                          color: Colors.white
+                                      ),
+                                      child: const Icon(
+                                        Icons.door_sliding_outlined,
+                                        color: Color(0xFF5B5B5B),
+                                      )),
+                                  title: Text(
+                                    'Gate : ${data?.gateAssign?.toUpperCase() ?? "NA"}',
+                                    style: const TextStyle(color: Color(0xFF272727), fontWeight: FontWeight.w500),
+                                  ),
                                 ),
                               ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: const Divider(height: 2),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.only(bottom: 6),
-                              child: ListTile(
-                                leading: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(10),
-                                        color: Colors.white
-                                    ),
-                                    child: const Icon(
-                                      Icons.lock,
-                                      color: Color(0xFF5B5B5B),
-                                    )),
-                                title: Text(
-                                  'Passcode : $passcode',
-                                  style: const TextStyle(color: Color(0xFF272727), fontWeight: FontWeight.w500),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: const Divider(height: 2),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.only(bottom: 6),
+                                child: ListTile(
+                                  leading: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(10),
+                                          color: Colors.white
+                                      ),
+                                      child: const Icon(
+                                        Icons.lock,
+                                        color: Color(0xFF5B5B5B),
+                                      )),
+                                  title: Text(
+                                    'Passcode : ${data?.checkInCode ?? "NA"}',
+                                    style: const TextStyle(color: Color(0xFF272727), fontWeight: FontWeight.w500),
+                                  ),
                                 ),
                               ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: const Divider(height: 2),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.only(bottom: 6),
-                              child: ListTile(
-                                leading: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(10),
-                                        color: Colors.white
-                                    ),
-                                    child: const Icon(
-                                      Icons.history,
-                                      color: Color(0xFF5B5B5B),
-                                    )),
-                                title: const Text(
-                                  'View Checkout History',
-                                  style: TextStyle(color: Color(0xFF272727), fontWeight: FontWeight.w500),
-                                ),
-                                trailing: const Icon(Icons.arrow_forward_ios,
-                                  size: 16,
-                                  color: Color(0xFF5B5B5B),),
-                                onTap: () {
-                                  Navigator.pushNamed(context, '/checkout-history-screen');
-                                },
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: const Divider(height: 2),
                               ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: const Divider(height: 2),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.only(bottom: 6),
-                              child: ListTile(
+                              Container(
+                                padding: const EdgeInsets.only(bottom: 6),
+                                child: ListTile(
+                                  leading: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(10),
+                                          color: Colors.white
+                                      ),
+                                      child: const Icon(
+                                        Icons.history,
+                                        color: Color(0xFF5B5B5B),
+                                      )),
+                                  title: const Text(
+                                    'View Checkout History',
+                                    style: TextStyle(color: Color(0xFF272727), fontWeight: FontWeight.w500),
+                                  ),
+                                  trailing: const Icon(Icons.arrow_forward_ios,
+                                    size: 16,
+                                    color: Color(0xFF5B5B5B),),
+                                  onTap: () {
+                                    Navigator.pushNamed(context, '/checkout-history-screen');
+                                  },
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: const Divider(height: 2),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.only(bottom: 6),
+                                child: ListTile(
+                                  leading: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(10)
+                                      ),
+                                      child: const Icon(
+                                        Icons.settings,
+                                        color: Color(0xFF5B5B5B),
+                                      )),
+                                  title: const Text(
+                                    'Settings',
+                                    style: TextStyle(color: Color(0xFF272727), fontWeight: FontWeight.w500),
+                                  ),
+                                  trailing: const Icon(Icons.arrow_forward_ios,
+                                    size: 16,
+                                    color: Color(0xFF5B5B5B),),
+                                  onTap: () {
+                                    Navigator.pushNamed(context, '/setting-screen',);
+                                  },
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: const Divider(height: 2),
+                              ),
+                              ListTile(
                                 leading: Container(
                                     padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
-                                        color: Colors.white,
+                                        color: const Color(0x2FB74343),
                                         borderRadius: BorderRadius.circular(10)
                                     ),
                                     child: const Icon(
-                                      Icons.settings,
-                                      color: Color(0xFF5B5B5B),
+                                      Icons.logout,
+                                      color: Color(0xFFAD3232),
                                     )),
                                 title: const Text(
-                                  'Settings',
-                                  style: TextStyle(color: Color(0xFF272727), fontWeight: FontWeight.w500),
+                                  'Logout',
+                                  style: TextStyle(color: Color(0xFFB74343), fontWeight: FontWeight.w500),
                                 ),
-                                trailing: const Icon(Icons.arrow_forward_ios,
-                                  size: 16,
-                                  color: Color(0xFF5B5B5B),),
-                                onTap: () {
-                                  Navigator.pushNamed(context, '/setting-screen',);
-                                },
+                                onTap: _logoutUser,
                               ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: const Divider(height: 2),
-                            ),
-                            ListTile(
-                              leading: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                      color: const Color(0x2FB74343),
-                                      borderRadius: BorderRadius.circular(10)
-                                  ),
-                                  child: const Icon(
-                                    Icons.logout,
-                                    color: Color(0xFFAD3232),
-                                  )),
-                              title: const Text(
-                                'Logout',
-                                style: TextStyle(color: Color(0xFFB74343), fontWeight: FontWeight.w500),
-                              ),
-                              onTap: _logoutUser,
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ]
+                      ]
+                  ),
                 ),
-              ),
-            );
+              );
+            } else if (_isLoading) {
+              return Center(
+                child: Lottie.asset(
+                  'assets/animations/loader.json',
+                  width: 100,
+                  height: 100,
+                  fit: BoxFit.contain,
+                ),
+              );
+            }else {
+              return RefreshIndicator(
+                onRefresh: _refreshData,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Container(
+                    height: MediaQuery.of(context).size.height - 200,
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Lottie.asset(
+                          'assets/animations/error.json',
+                          width: 200,
+                          height: 200,
+                          fit: BoxFit.cover,
+                        ),
+                        const SizedBox(height: 20),
+                        const Text(
+                          "Something went wrong!",
+                          style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
           },
-        ));
+        )
+    );
   }
 
   Future<void> _refreshData() async {
     context.read<AuthBloc>().add(AuthGetUser());
-  }
-
-
-  Widget _buildOptionTile(
-      {required IconData icon,
-      required String label,
-      required VoidCallback onTap}) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.blue),
-      title: Text(
-        label,
-        style: TextStyle(
-          fontSize: 18.0,
-          color: Colors.grey[800],
-        ),
-      ),
-      trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
-      onTap: onTap,
-    );
   }
 
   void _logoutUser() {

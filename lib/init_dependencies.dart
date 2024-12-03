@@ -14,6 +14,8 @@ import 'package:gate_guard/features/invite_visitors/bloc/invite_visitors_bloc.da
 import 'package:gate_guard/features/invite_visitors/repository/invite_visitors_repository.dart';
 import 'package:gate_guard/features/my_visitors/bloc/my_visitors_bloc.dart';
 import 'package:gate_guard/features/my_visitors/repository/my_visitors_repository.dart';
+import 'package:gate_guard/features/resident_profile/bloc/resident_profile_bloc.dart';
+import 'package:gate_guard/features/resident_profile/repository/resident_profile_repository.dart';
 import 'package:gate_guard/features/setting/bloc/setting_bloc.dart';
 import 'package:gate_guard/features/setting/repository/setting_repository.dart';
 import 'package:get_it/get_it.dart';
@@ -33,6 +35,7 @@ Future<void> initDependencies()async {
   _initInviteVisitor();
   _initMyVisitor();
   _initGuardProfile();
+  _initResidentProfile();
   _initSetting();
 }
 
@@ -79,6 +82,11 @@ void _initMyVisitor(){
 void _initGuardProfile(){
   serviceLocator.registerLazySingleton<GuardProfileRepository>(() => GuardProfileRepository());
   serviceLocator.registerLazySingleton(()=> GuardProfileBloc(guardProfileRepository: serviceLocator()));
+}
+
+void _initResidentProfile(){
+  serviceLocator.registerLazySingleton<ResidentProfileRepository>(() => ResidentProfileRepository());
+  serviceLocator.registerLazySingleton(()=> ResidentProfileBloc(residentProfileRepository: serviceLocator()));
 }
 
 void _initSetting(){

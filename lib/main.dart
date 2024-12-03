@@ -10,6 +10,7 @@ import 'package:gate_guard/features/guard_profile/bloc/guard_profile_bloc.dart';
 import 'package:gate_guard/features/guard_waiting/bloc/guard_waiting_bloc.dart';
 import 'package:gate_guard/features/invite_visitors/bloc/invite_visitors_bloc.dart';
 import 'package:gate_guard/features/my_visitors/bloc/my_visitors_bloc.dart';
+import 'package:gate_guard/features/resident_profile/bloc/resident_profile_bloc.dart';
 import 'package:gate_guard/features/setting/bloc/setting_bloc.dart';
 import 'package:gate_guard/init_dependencies.dart';
 import 'package:gate_guard/utils/notification_service.dart';
@@ -64,6 +65,9 @@ void main() async {
             ),
             BlocProvider(
               create: (_) => serviceLocator<GuardProfileBloc>(),
+            ),
+            BlocProvider(
+              create: (_) => serviceLocator<ResidentProfileBloc>(),
             ),
             BlocProvider(
               create: (_) => serviceLocator<SettingBloc>(),
