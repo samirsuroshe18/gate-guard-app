@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:gate_guard/features/guard_profile/models/checkout_history.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -45,6 +46,39 @@ class GuardProfileRepository{
         throw ApiError(
             statusCode: response.statusCode,
             message: jsonResponse['message'] ?? 'Unknown error occurred');
+      }
+    } catch (e) {
+      if (e is ApiError) {
+        throw ApiError(statusCode: e.statusCode, message: e.message);
+      } else {
+        throw ApiError(message: e.toString());
+      }
+    }
+  }
+
+  Future<List<CheckoutHistory>> getCheckoutHistory() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? accessToken = prefs.getString('accessToken');
+
+      const apiUrl =
+          'https://invite.iotsense.in/api/v1/delivery-entry/get-checkout-history';
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+      final jsonBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return (jsonBody['data'] as List)
+            .map((data) => CheckoutHistory.fromJson(data))
+            .toList();
+      } else {
+        throw ApiError(
+            statusCode: response.statusCode, message: jsonBody['message']);
       }
     } catch (e) {
       if (e is ApiError) {

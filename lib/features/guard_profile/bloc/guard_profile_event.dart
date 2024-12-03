@@ -9,3 +9,5 @@ final class GuardUpdateDetails extends GuardProfileEvent{
 
   GuardUpdateDetails({this.userName, this.profile});
 }
+
+final class GetCheckoutHistory extends GuardProfileEvent{}

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gate_guard/features/guard_profile/models/checkout_history.dart';
 import 'package:gate_guard/features/guard_profile/repository/guard_profile_repository.dart';
 
 import '../../../utils/api_error.dart';
@@ -23,6 +24,20 @@ class GuardProfileBloc extends Bloc<GuardProfileEvent, GuardProfileState>{
           emit(GuardUpdateDetailsFailure(message:e.message.toString(), status: e.statusCode));
         }else{
           emit(GuardUpdateDetailsFailure(message: e.toString()));
+        }
+      }
+    });
+
+    on<GetCheckoutHistory>((event, emit) async {
+      emit(GetCheckoutHistoryLoading());
+      try{
+        final List<CheckoutHistory> response = await _guardProfileRepository.getCheckoutHistory();
+        emit(GetCheckoutHistorySuccess(response: response));
+      }catch(e){
+        if (e is ApiError) {
+          emit(GetCheckoutHistoryFailure(message: e.message.toString(), status: e.statusCode));
+        }else{
+          emit(GetCheckoutHistoryFailure(message: e.toString()));
         }
       }
     });

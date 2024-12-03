@@ -181,7 +181,9 @@ class _GuardProfileScreenState extends State<GuardProfileScreen> {
                                 trailing: const Icon(Icons.arrow_forward_ios,
                                   size: 16,
                                   color: Color(0xFF5B5B5B),),
-                                onTap: () {},
+                                onTap: () {
+                                  Navigator.pushNamed(context, '/checkout-history-screen');
+                                },
                               ),
                             ),
                             Container(
@@ -208,7 +210,9 @@ class _GuardProfileScreenState extends State<GuardProfileScreen> {
                                 trailing: const Icon(Icons.arrow_forward_ios,
                                   size: 16,
                                   color: Color(0xFF5B5B5B),),
-                                onTap: () {},
+                                onTap: () {
+                                  Navigator.pushNamed(context, '/setting-screen',);
+                                },
                               ),
                             ),
                             Container(

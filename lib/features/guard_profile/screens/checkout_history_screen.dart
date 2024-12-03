@@ -1,0 +1,109 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gate_guard/features/guard_profile/bloc/guard_profile_bloc.dart';
+import 'package:gate_guard/features/guard_profile/models/checkout_history.dart';
+import 'package:gate_guard/features/guard_profile/widgets/checkout_history_card.dart';
+import 'package:lottie/lottie.dart';
+
+class CheckoutHistoryScreen extends StatefulWidget {
+  const CheckoutHistoryScreen({super.key});
+
+  @override
+  State<CheckoutHistoryScreen> createState() => _CheckoutHistoryScreenState();
+}
+
+class _CheckoutHistoryScreenState extends State<CheckoutHistoryScreen> {
+  List<CheckoutHistory> data = [];
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    print("everything working fine");
+    context.read<GuardProfileBloc>().add(GetCheckoutHistory());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.blueAccent,
+          title: const Text(
+            "Checkout History",
+            style: TextStyle(
+              color: Colors.white,
+            ),
+          ),
+        ),
+        body: BlocConsumer<GuardProfileBloc, GuardProfileState>(
+          listener: (context, state) {
+            if (state is GetCheckoutHistoryLoading) {
+              _isLoading = true;
+            }
+            if (state is GetCheckoutHistorySuccess) {
+              data = state.response;
+              _isLoading = false;
+            }
+            if (state is GetCheckoutHistoryFailure) {
+              data = [];
+              _isLoading = false;
+            }
+          },
+          builder: (context, state) {
+            if (data.isNotEmpty && _isLoading == false) {
+              return RefreshIndicator(
+                onRefresh: _onRefresh,
+                child: ListView.builder(
+                  itemCount: data.length,
+                  padding: const EdgeInsets.all(8.0),
+                  itemBuilder: (BuildContext context, int index) {
+                    return CheckoutHistoryCard(data: data[index]);
+                  },
+                ),
+              );
+            } else if (_isLoading) {
+              return Center(
+                child: Lottie.asset(
+                  'assets/animations/loader.json',
+                  width: 100,
+                  height: 100,
+                  fit: BoxFit.contain,
+                ),
+              );
+            } else {
+              return RefreshIndicator(
+                onRefresh: _onRefresh,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Container(
+                    height: MediaQuery.of(context).size.height - 200,
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Lottie.asset(
+                          'assets/animations/no_data.json',
+                          width: 200,
+                          height: 200,
+                          fit: BoxFit.cover,
+                        ),
+                        const SizedBox(height: 20),
+                        const Text(
+                          "There is no past visitors",
+                          style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
+          },
+        ));
+  }
+
+  Future<void> _onRefresh() async {
+    context.read<GuardProfileBloc>().add(GetCheckoutHistory());
+  }
+}

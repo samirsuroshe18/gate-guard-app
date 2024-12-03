@@ -17,6 +17,7 @@ import 'package:gate_guard/features/check_in/screens/mobile_no_screen.dart';
 import 'package:gate_guard/features/guard_entry/screens/guest_approval_profile.dart';
 import 'package:gate_guard/features/guard_entry/screens/other_approval_profile.dart';
 import 'package:gate_guard/features/guard_entry/screens/other_more_option.dart';
+import 'package:gate_guard/features/guard_profile/screens/checkout_history_screen.dart';
 import 'package:gate_guard/features/guard_waiting/screens/view_resident_approval.dart';
 import 'package:gate_guard/features/home/screens/admin_home_screen.dart';
 import 'package:gate_guard/features/guard_profile/screens/edit_profile_screen.dart';
@@ -32,6 +33,9 @@ import 'package:gate_guard/features/administration/screens/guard_approval_screen
 import 'package:gate_guard/features/administration/screens/resident_approval_screen.dart';
 import 'package:gate_guard/features/auth/screens/complete_profile_screen.dart';
 import 'package:gate_guard/features/invite_visitors/screens/otp_banner.dart';
+import 'package:gate_guard/features/my_visitors/screens/past_visitors_screen.dart';
+import 'package:gate_guard/features/setting/screens/change_password_screen.dart';
+import 'package:gate_guard/features/setting/screens/setting_screen.dart';
 
 import '../../features/auth/screens/forgot_password_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
@@ -116,6 +120,12 @@ class AppRoutes {
         return args is Map<String, dynamic> ? _materialRoute(AskingGuestApprovalScreen(deliveryData: args,)) : _materialRoute( const AskingGuestApprovalScreen());
       case '/edit-profile-screen':
         return args is GetUserModel ? _materialRoute(EditProfileScreen(data: args,)) : _materialRoute( const EditProfileScreen());
+      case '/change-password':
+        return _materialRoute( const ChangePasswordScreen());
+      case '/setting-screen':
+        return _materialRoute( const SettingScreen());
+      case '/checkout-history-screen':
+        return _materialRoute( const CheckoutHistoryScreen());
       default:
         return _materialRoute(const SplashScreen());
     }
