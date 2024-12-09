@@ -156,7 +156,7 @@ class NotificationController {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         String? accessToken = prefs.getString('accessToken');
         const apiKey =
-            'http://www.iotsense.in:8000/api/v1/delivery-entry/approve-delivery';
+            'https://invite.iotsense.in/api/v1/delivery-entry/approve-delivery';
         final Map<String, dynamic> data = {
           'id': receivedAction.payload?['id'],
         };
@@ -179,7 +179,7 @@ class NotificationController {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         String? accessToken = prefs.getString('accessToken');
         const apiKey =
-            'http://www.iotsense.in:8000/api/v1/delivery-entry/reject-delivery';
+            'https://invite.iotsense.in/api/v1/delivery-entry/reject-delivery';
         final Map<String, dynamic> data = {
           'id': receivedAction.payload?['id'],
         };
