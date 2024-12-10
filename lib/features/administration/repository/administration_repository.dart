@@ -2,12 +2,15 @@ import 'dart:convert';
 
 import 'package:gate_guard/features/administration/models/guard_requests_model.dart';
 import 'package:gate_guard/features/administration/models/resident_requests_model.dart';
+import 'package:gate_guard/features/administration/models/society_guard.dart';
+import 'package:gate_guard/features/administration/models/society_member.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../utils/api_error.dart';
 
 class AdministrationRepository {
+
   Future<List<ResidentRequestsModel>> getPendingResidentRequest() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -156,4 +159,71 @@ class AdministrationRepository {
       }
     }
   }
+
+  Future<List<SocietyMember>> getAllResidents() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? accessToken = prefs.getString('accessToken');
+
+      const apiUrl =
+          'https://invite.iotsense.in/api/v1/admin/get-resident';
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+      final jsonBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return (jsonBody['data'] as List)
+            .map((data) => SocietyMember.fromJson(data))
+            .toList();
+      } else {
+        throw ApiError(
+            statusCode: response.statusCode, message: jsonBody['message']);
+      }
+    } catch (e) {
+      if (e is ApiError) {
+        throw ApiError(statusCode: e.statusCode, message: e.message);
+      } else {
+        throw ApiError(message: e.toString());
+      }
+    }
+  }
+
+  Future<List<SocietyGuard>> getAllGuards() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? accessToken = prefs.getString('accessToken');
+
+      const apiUrl =
+          'https://invite.iotsense.in/api/v1/admin/get-guards';
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+      final jsonBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return (jsonBody['data'] as List)
+            .map((data) => SocietyGuard.fromJson(data))
+            .toList();
+      } else {
+        throw ApiError(
+            statusCode: response.statusCode, message: jsonBody['message']);
+      }
+    } catch (e) {
+      if (e is ApiError) {
+        throw ApiError(statusCode: e.statusCode, message: e.message);
+      } else {
+        throw ApiError(message: e.toString());
+      }
+    }
+  }
+
 }

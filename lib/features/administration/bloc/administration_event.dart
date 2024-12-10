@@ -22,3 +22,7 @@ final class AdminVerifyGuard extends AdministrationEvent{
 
   AdminVerifyGuard({required this.requestId, required this.user, required this.guardStatus});
 }
+
+final class AdminGetSocietyMember extends AdministrationEvent{}
+
+final class AdminGetSocietyGuard extends AdministrationEvent{}

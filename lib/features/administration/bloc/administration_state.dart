@@ -64,3 +64,33 @@ final class AdminVerifyResidentFailure extends AdministrationState{
 
   AdminVerifyResidentFailure( {required this.message, this.status});
 }
+
+///Get all society resident
+final class AdminGetSocietyMemberLoading extends AdministrationState{}
+
+final class AdminGetSocietyMemberSuccess extends AdministrationState{
+  final List<SocietyMember> response;
+  AdminGetSocietyMemberSuccess({required this.response});
+}
+
+final class AdminGetSocietyMemberFailure extends AdministrationState{
+  final String message;
+  final int? status;
+
+  AdminGetSocietyMemberFailure( {required this.message, this.status});
+}
+
+///Get all society guards
+final class AdminGetSocietyGuardLoading extends AdministrationState{}
+
+final class AdminGetSocietyGuardSuccess extends AdministrationState{
+  final List<SocietyGuard> response;
+  AdminGetSocietyGuardSuccess({required this.response});
+}
+
+final class AdminGetSocietyGuardFailure extends AdministrationState{
+  final String message;
+  final int? status;
+
+  AdminGetSocietyGuardFailure( {required this.message, this.status});
+}

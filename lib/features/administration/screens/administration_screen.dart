@@ -39,7 +39,7 @@ class _AdministrationScreenState extends State<AdministrationScreen> {
             icon: Icons.people,
             title: 'Manage Residents',
             onDashboard: () {
-              // Handle Manage Residents click
+              Navigator.pushNamed(context, '/all-resident-screen');
             },
           ),
           const SizedBox(height: 16.0),
@@ -47,7 +47,7 @@ class _AdministrationScreenState extends State<AdministrationScreen> {
             icon: Icons.security,
             title: 'Manage Guards',
             onDashboard: () {
-              // Handle Admin Settings click
+              Navigator.pushNamed(context, '/all-guard-screen');
             },
           ),
         ],

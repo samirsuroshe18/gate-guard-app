@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gate_guard/features/administration/models/guard_requests_model.dart';
 import 'package:gate_guard/features/administration/models/resident_requests_model.dart';
+import 'package:gate_guard/features/administration/models/society_guard.dart';
+import 'package:gate_guard/features/administration/models/society_member.dart';
 import 'package:gate_guard/features/administration/repository/administration_repository.dart';
 
 import '../../../utils/api_error.dart';
@@ -68,5 +70,34 @@ class AdministrationBloc extends Bloc<AdministrationEvent, AdministrationState>{
         }
       }
     });
+
+    on<AdminGetSocietyMember>((event, emit) async {
+      emit(AdminGetSocietyMemberLoading());
+      try{
+        final List<SocietyMember> response = await _administrationRepository.getAllResidents();
+        emit(AdminGetSocietyMemberSuccess(response: response));
+      }catch(e){
+        if (e is ApiError) {
+          emit(AdminGetSocietyMemberFailure(message: e.message.toString(), status: e.statusCode));
+        }else{
+          emit(AdminGetSocietyMemberFailure(message: e.toString()));
+        }
+      }
+    });
+
+    on<AdminGetSocietyGuard>((event, emit) async {
+      emit(AdminGetSocietyGuardLoading());
+      try{
+        final List<SocietyGuard> response = await _administrationRepository.getAllGuards();
+        emit(AdminGetSocietyGuardSuccess(response: response));
+      }catch(e){
+        if (e is ApiError) {
+          emit(AdminGetSocietyGuardFailure(message: e.message.toString(), status: e.statusCode));
+        }else{
+          emit(AdminGetSocietyGuardFailure(message: e.toString()));
+        }
+      }
+    });
+
   }
 }
