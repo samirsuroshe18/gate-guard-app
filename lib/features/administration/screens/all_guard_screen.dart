@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gate_guard/features/administration/bloc/administration_bloc.dart';
 import 'package:gate_guard/features/administration/models/society_guard.dart';
-import 'package:gate_guard/features/administration/models/society_member.dart';
-import 'package:gate_guard/features/resident_profile/bloc/resident_profile_bloc.dart';
 import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -17,6 +15,8 @@ class AllGuardScreen extends StatefulWidget {
 
 class _AllGuardScreenState extends State<AllGuardScreen> {
   List<SocietyGuard> data = [];
+  List<SocietyGuard> filteredGuards = [];
+  String searchQuery = '';
   bool _isLoading = false;
 
   @override
@@ -28,6 +28,22 @@ class _AllGuardScreenState extends State<AllGuardScreen> {
   Future<void> _initialize() async {
     if(!mounted) return;
     context.read<AdministrationBloc>().add(AdminGetSocietyGuard());
+  }
+
+  void filterGuards(String query) {
+    final filtered = data.where((data) {
+      final nameLower = data.user?.userName?.toLowerCase() ?? '';
+      final phoneLower = data.user?.phoneNo?.toLowerCase() ?? '';
+      final searchLower = query.toLowerCase();
+
+      return nameLower.contains(searchLower) ||
+          phoneLower.contains(searchLower);
+    }).toList();
+
+    setState(() {
+      filteredGuards = filtered;
+      searchQuery = query;
+    });
   }
 
   @override
@@ -48,6 +64,7 @@ class _AllGuardScreenState extends State<AllGuardScreen> {
             if (state is AdminGetSocietyGuardSuccess) {
               _isLoading = false;
               data = state.response;
+              filteredGuards = data;
             }
             if (state is AdminGetSocietyGuardFailure) {
               _isLoading = false;
@@ -57,30 +74,51 @@ class _AllGuardScreenState extends State<AllGuardScreen> {
             if(data.isNotEmpty && _isLoading == false) {
               return RefreshIndicator(
                 onRefresh: _refreshUserData,  // Method to refresh user data
-                child: ListView.builder(
-                  itemCount: data.length,
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
-                  itemBuilder: (context, index) {
-                    final member = data[index];
-                    return Card(
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage: NetworkImage(member.user?.profile ?? ""),
-                        ),
-                        title: Text(
-                          member.user?.userName ?? "NA",
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(member.user?.phoneNo ?? ""),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.call),
-                          onPressed: () {
-                            _makePhoneCall(member.user?.phoneNo ?? "");
-                          },
+                child: Column(
+                  children: [
+                    TextField(
+                      onChanged: (query) => filterGuards(query),
+                      style: const TextStyle(color: Colors.black),
+                      decoration: InputDecoration(
+                        hintText: 'Search by name or mobile number',
+                        hintStyle: const TextStyle(color: Colors.grey),
+                        prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                          borderSide: BorderSide.none,
                         ),
                       ),
-                    );
-                  },
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: filteredGuards.length,
+                        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
+                        itemBuilder: (context, index) {
+                          final member = filteredGuards[index];
+                          return Card(
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundImage: NetworkImage(member.user?.profile ?? ""),
+                              ),
+                              title: Text(
+                                member.user?.userName ?? "NA",
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Text(member.user?.phoneNo ?? ""),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.call),
+                                onPressed: () {
+                                  _makePhoneCall(member.user?.phoneNo ?? "");
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               );
             } else if (_isLoading) {
