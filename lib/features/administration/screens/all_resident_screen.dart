@@ -69,6 +69,21 @@ class _AllResidentScreenState extends State<AllResidentScreen> {
             if (state is AdminGetSocietyMemberFailure) {
               _isLoading = false;
             }
+            // if (state is AdminCreateAdminLoading) {
+            //   _isLoading = true;
+            // }
+            if (state is AdminCreateAdminSuccess) {
+              // _isLoading = false;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.response['message']!),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+            // if (state is AdminCreateAdminFailure) {
+            //   _isLoading = false;
+            // }
           },
           builder: (context, state){
             if(data.isNotEmpty && _isLoading == false) {
@@ -107,11 +122,49 @@ class _AllResidentScreenState extends State<AllResidentScreen> {
                                 style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                               subtitle: Text(member.user?.phoneNo ?? ""),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.call),
-                                onPressed: () {
-                                  _makePhoneCall(member.user?.phoneNo ?? "");
+                              trailing: PopupMenuButton<String>(
+                                onSelected: (value) {
+                                  if (value == 'delete') {
+                                    _deleteResident(member.user?.id ?? "");
+                                  } else if (value == 'makeAdmin') {
+                                    _makeAdmin(member.user?.email ?? "");
+                                  }else if(value == 'call'){
+                                    _makePhoneCall(member.user?.phoneNo ?? "");
+                                  }
                                 },
+                                itemBuilder: (context) => [
+                                  const PopupMenuItem(
+                                    value: 'delete',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.delete, color: Colors.red),
+                                        SizedBox(width: 8),
+                                        Text('Delete Resident'),
+                                      ],
+                                    ),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'makeAdmin',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.person_add, color: Colors.blue),
+                                        SizedBox(width: 8),
+                                        Text('Make Admin'),
+                                      ],
+                                    ),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'call',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.call, color: Colors.blue),
+                                        SizedBox(width: 8),
+                                        Text('Call'),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                                icon: const Icon(Icons.more_vert), // Three-dot icon
                               ),
                             ),
                           );
@@ -175,5 +228,108 @@ class _AllResidentScreenState extends State<AllResidentScreen> {
     } else {
       throw 'Could not launch $url';
     }
+  }
+
+  Future<void> _makeAdmin(String email) async {
+    if(!mounted) return;
+
+    showDialog(context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Promote User to Admin'),
+          content: const Text('Are you sure you want to grant admin privileges to this user? Admins have elevated permissions to manage the system.'),
+          actions: [
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            BlocBuilder<AdministrationBloc, AdministrationState>(
+              builder: (context, state) {
+                if (state is AdminCreateAdminLoading) {
+                  return const CircularProgressIndicator();
+                } else if (state is AdminCreateAdminFailure) {
+                  return TextButton(
+                    child: const Text('Confirm'),
+                    onPressed: () {
+                      context.read<AdministrationBloc>().add(AdminCreateAdmin(email: email));
+                    },
+                  );
+                }else if (state is AdminCreateAdminSuccess) {
+                  onPressed(){
+                    Navigator.of(context).pop();
+                  }
+                  return TextButton(
+                    onPressed: onPressed(),
+                    child: const Text('Confirm'),
+                  );
+                } else {
+                  return TextButton(
+                    child: const Text('Confirm'),
+                    onPressed: () {
+                      context.read<AdministrationBloc>().add(
+                        AdminCreateAdmin(email: email),
+                      );
+                    },
+                  );
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _deleteResident(String id) async {
+    if(!mounted) return;
+
+    showDialog(context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Resident', style: TextStyle(color: Colors.red)),
+          content: const Text('Are you sure you want to delete this resident? This action cannot be undone and will remove all associated data.'),
+          actions: [
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            BlocBuilder<AdministrationBloc, AdministrationState>(
+              builder: (context, state) {
+                if (state is AdminRemoveResidentLoading) {
+                  return const CircularProgressIndicator();
+                } else if (state is AdminRemoveResidentFailure) {
+                  return TextButton(
+                    child: const Text('Delete', style: TextStyle(color: Colors.red),),
+                    onPressed: () {
+                      context.read<AdministrationBloc>().add(AdminRemoveResident(id: id));
+                    },
+                  );
+                }else if (state is AdminRemoveResidentSuccess) {
+                  onPressed(){
+                    context.read<AdministrationBloc>().add(AdminGetSocietyMember());
+                    Navigator.of(context).pop();
+                  }
+                  return TextButton(
+                    onPressed: onPressed(),
+                    child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                  );
+                } else {
+                  return TextButton(
+                    child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                    onPressed: () {
+                      context.read<AdministrationBloc>().add(AdminRemoveResident(id: id));
+                    },
+                  );
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

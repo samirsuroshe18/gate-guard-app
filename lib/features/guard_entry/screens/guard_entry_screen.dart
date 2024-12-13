@@ -219,7 +219,7 @@ class _GuardEntryScreenState extends State<GuardEntryScreen> {
       },
       pinTheme: PinTheme(
         fieldOuterPadding: const EdgeInsets.symmetric(horizontal: 5),
-        fieldWidth: 50,
+        fieldWidth: MediaQuery.of(context).size.width * 0.12, // Responsive width
         shape: PinCodeFieldShape.box,
         borderWidth: 2,
         activeColor: Colors.blue,
@@ -242,7 +242,11 @@ class _GuardEntryScreenState extends State<GuardEntryScreen> {
       animationDuration: const Duration(milliseconds: 300),
       enablePinAutofill: true,
       backgroundColor: Colors.transparent,
-      textStyle: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
+      textStyle: TextStyle(
+        fontSize: MediaQuery.of(context).size.width * 0.05, // Responsive font size
+        fontWeight: FontWeight.bold,
+        color: Colors.black,
+      ),
     );
   }
 

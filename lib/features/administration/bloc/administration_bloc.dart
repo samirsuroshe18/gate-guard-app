@@ -99,5 +99,75 @@ class AdministrationBloc extends Bloc<AdministrationEvent, AdministrationState>{
       }
     });
 
+    on<AdminGetSocietyAdmin>((event, emit) async {
+      emit(AdminGetSocietyAdminLoading());
+      try{
+        final List<SocietyMember> response = await _administrationRepository.getAllAdmin();
+        emit(AdminGetSocietyAdminSuccess(response: response));
+      }catch(e){
+        if (e is ApiError) {
+          emit(AdminGetSocietyAdminFailure(message: e.message.toString(), status: e.statusCode));
+        }else{
+          emit(AdminGetSocietyAdminFailure(message: e.toString()));
+        }
+      }
+    });
+
+    on<AdminCreateAdmin>((event, emit) async {
+      emit(AdminCreateAdminLoading());
+      try{
+        final Map<String, dynamic> response = await _administrationRepository.createAdmin(email: event.email);
+        emit(AdminCreateAdminSuccess(response: response));
+      }catch(e){
+        if (e is ApiError) {
+          emit(AdminCreateAdminFailure(message: e.message.toString(), status: e.statusCode));
+        }else{
+          emit(AdminCreateAdminFailure(message: e.toString()));
+        }
+      }
+    });
+
+    on<AdminRemoveAdmin>((event, emit) async {
+      emit(AdminRemoveAdminLoading());
+      try{
+        final Map<String, dynamic> response = await _administrationRepository.removeAdmin(email: event.email);
+        emit(AdminRemoveAdminSuccess(response: response));
+      }catch(e){
+        if (e is ApiError) {
+          emit(AdminRemoveAdminFailure(message: e.message.toString(), status: e.statusCode));
+        }else{
+          emit(AdminRemoveAdminFailure(message: e.toString()));
+        }
+      }
+    });
+
+    on<AdminRemoveResident>((event, emit) async {
+      emit(AdminRemoveResidentLoading());
+      try{
+        final Map<String, dynamic> response = await _administrationRepository.removeResident(id: event.id);
+        emit(AdminRemoveResidentSuccess(response: response));
+      }catch(e){
+        if (e is ApiError) {
+          emit(AdminRemoveResidentFailure(message: e.message.toString(), status: e.statusCode));
+        }else{
+          emit(AdminRemoveResidentFailure(message: e.toString()));
+        }
+      }
+    });
+
+    on<AdminRemoveGuard>((event, emit) async {
+      emit(AdminRemoveGuardLoading());
+      try{
+        final Map<String, dynamic> response = await _administrationRepository.removeGuard(id: event.id);
+        emit(AdminRemoveGuardSuccess(response: response));
+      }catch(e){
+        if (e is ApiError) {
+          emit(AdminRemoveGuardFailure(message: e.message.toString(), status: e.statusCode));
+        }else{
+          emit(AdminRemoveGuardFailure(message: e.toString()));
+        }
+      }
+    });
+
   }
 }

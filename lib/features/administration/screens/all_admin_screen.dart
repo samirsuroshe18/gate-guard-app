@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gate_guard/features/administration/bloc/administration_bloc.dart';
-import 'package:gate_guard/features/administration/models/society_guard.dart';
+import 'package:gate_guard/features/administration/models/society_member.dart';
 import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 
-class AllGuardScreen extends StatefulWidget {
-  const AllGuardScreen({super.key,});
+class AllAdminScreen extends StatefulWidget {
+  const AllAdminScreen({super.key,});
 
   @override
-  State<AllGuardScreen> createState() => _AllGuardScreenState();
+  State<AllAdminScreen> createState() => _AllAdminScreenState();
 }
 
-class _AllGuardScreenState extends State<AllGuardScreen> {
-  List<SocietyGuard> data = [];
-  List<SocietyGuard> filteredGuards = [];
+class _AllAdminScreenState extends State<AllAdminScreen> {
+  List<SocietyMember> data = [];
+  List<SocietyMember> filteredResidents = [];
   String searchQuery = '';
   bool _isLoading = false;
 
@@ -27,10 +27,10 @@ class _AllGuardScreenState extends State<AllGuardScreen> {
 
   Future<void> _initialize() async {
     if(!mounted) return;
-    context.read<AdministrationBloc>().add(AdminGetSocietyGuard());
+    context.read<AdministrationBloc>().add(AdminGetSocietyAdmin());
   }
 
-  void filterGuards(String query) {
+  void filterResidents(String query) {
     final filtered = data.where((data) {
       final nameLower = data.user?.userName?.toLowerCase() ?? '';
       final phoneLower = data.user?.phoneNo?.toLowerCase() ?? '';
@@ -41,7 +41,7 @@ class _AllGuardScreenState extends State<AllGuardScreen> {
     }).toList();
 
     setState(() {
-      filteredGuards = filtered;
+      filteredResidents = filtered;
       searchQuery = query;
     });
   }
@@ -51,33 +51,49 @@ class _AllGuardScreenState extends State<AllGuardScreen> {
     return Scaffold(
         appBar: AppBar(
           title: const Text(
-            'Society Guards',
+            'Society Admin',
             style: TextStyle(color: Colors.white,),
           ),
           backgroundColor: Colors.blueAccent,
         ),
         body: BlocConsumer<AdministrationBloc, AdministrationState>(
           listener: (context, state){
-            if (state is AdminGetSocietyGuardLoading) {
+            if (state is AdminGetSocietyAdminLoading) {
               _isLoading = true;
             }
-            if (state is AdminGetSocietyGuardSuccess) {
+            if (state is AdminGetSocietyAdminSuccess) {
               _isLoading = false;
               data = state.response;
-              filteredGuards = data;
+              filteredResidents = data;
             }
-            if (state is AdminGetSocietyGuardFailure) {
+            if (state is AdminGetSocietyAdminFailure) {
               _isLoading = false;
+              filteredResidents = [];
             }
+            // if (state is AdminRemoveAdminLoading) {
+            //   _isLoading = true;
+            // }
+            if (state is AdminRemoveAdminSuccess) {
+              // _isLoading = false;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.response['message']!),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+            // if (state is AdminRemoveAdminFailure) {
+            //   _isLoading = false;
+            // }
           },
           builder: (context, state){
-            if(data.isNotEmpty && _isLoading == false) {
+            if(filteredResidents.isNotEmpty && _isLoading == false) {
               return RefreshIndicator(
                 onRefresh: _refreshUserData,  // Method to refresh user data
                 child: Column(
                   children: [
                     TextField(
-                      onChanged: (query) => filterGuards(query),
+                      onChanged: (query) => filterResidents(query),
                       style: const TextStyle(color: Colors.black),
                       decoration: InputDecoration(
                         hintText: 'Search by name or mobile number',
@@ -93,10 +109,10 @@ class _AllGuardScreenState extends State<AllGuardScreen> {
                     ),
                     Expanded(
                       child: ListView.builder(
-                        itemCount: filteredGuards.length,
+                        itemCount: filteredResidents.length,
                         padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
                         itemBuilder: (context, index) {
-                          final member = filteredGuards[index];
+                          final member = filteredResidents[index];
                           return Card(
                             child: ListTile(
                               leading: CircleAvatar(
@@ -109,20 +125,20 @@ class _AllGuardScreenState extends State<AllGuardScreen> {
                               subtitle: Text(member.user?.phoneNo ?? ""),
                               trailing: PopupMenuButton<String>(
                                 onSelected: (value) {
-                                  if (value == 'delete') {
-                                    _deleteGuard(member.user?.email ?? "");
+                                  if (value == 'remove') {
+                                    _removeAdmin(member.user?.email ?? "");
                                   } else if(value == 'call'){
                                     _makePhoneCall(member.user?.phoneNo ?? "");
                                   }
                                 },
                                 itemBuilder: (context) => [
                                   const PopupMenuItem(
-                                    value: 'delete',
+                                    value: 'remove',
                                     child: Row(
                                       children: [
-                                        Icon(Icons.delete, color: Colors.red),
+                                        Icon(Icons.person_remove, color: Colors.red),
                                         SizedBox(width: 8),
-                                        Text('Delete Guard'),
+                                        Text('Remove Admin'),
                                       ],
                                     ),
                                   ),
@@ -168,14 +184,14 @@ class _AllGuardScreenState extends State<AllGuardScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Lottie.asset(
-                          'assets/animations/error.json',
+                          'assets/animations/no_data.json',
                           width: 200,
                           height: 200,
                           fit: BoxFit.cover,
                         ),
                         const SizedBox(height: 20),
                         const Text(
-                          "Something went wrong!",
+                          "There is no admin",
                           style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),
@@ -191,7 +207,7 @@ class _AllGuardScreenState extends State<AllGuardScreen> {
   }
 
   Future<void> _refreshUserData() async {
-    context.read<AdministrationBloc>().add(AdminGetSocietyGuard());
+    context.read<AdministrationBloc>().add(AdminGetSocietyAdmin());
   }
 
   void _makePhoneCall(String phoneNumber) async {
@@ -203,14 +219,14 @@ class _AllGuardScreenState extends State<AllGuardScreen> {
     }
   }
 
-  Future<void> _deleteGuard(String id) async {
+  Future<void> _removeAdmin(String email) async {
     if(!mounted) return;
 
     showDialog(context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Delete Guard', style: TextStyle(color: Colors.red)),
-          content: const Text('Are you sure you want to delete this security guard? This action cannot be undone and will remove all associated data.'),
+          title: const Text('Revoke Admin Privileges', style: TextStyle(color: Colors.red)),
+          content: const Text('Are you sure you want to revoke admin privileges from this user? They will lose access to admin-level features and permissions.'),
           actions: [
             TextButton(
               child: const Text('Cancel'),
@@ -220,30 +236,30 @@ class _AllGuardScreenState extends State<AllGuardScreen> {
             ),
             BlocBuilder<AdministrationBloc, AdministrationState>(
               builder: (context, state) {
-                if (state is AdminRemoveGuardLoading) {
-                  return const CircularProgressIndicator();
-                } else if (state is AdminRemoveGuardFailure) {
+                if (state is AdminRemoveAdminLoading) {
+                  return const CircularProgressIndicator(color: Colors.red,);
+                } else if (state is AdminRemoveAdminFailure) {
                   return TextButton(
-                    child: const Text('Delete', style: TextStyle(color: Colors.red),),
+                    child: const Text('Revoke', style: TextStyle(color: Colors.red),),
                     onPressed: () {
-                      context.read<AdministrationBloc>().add(AdminRemoveGuard(id: id));
+                      context.read<AdministrationBloc>().add(AdminRemoveAdmin(email: email));
                     },
                   );
-                }else if (state is AdminRemoveGuardSuccess) {
+                }else if (state is AdminRemoveAdminSuccess) {
                   onPressed(){
-                    context.read<AdministrationBloc>().add(AdminGetSocietyGuard());
+                    context.read<AdministrationBloc>().add(AdminGetSocietyAdmin());
                     Navigator.of(context).pop();
                   }
                   return TextButton(
                     onPressed: onPressed(),
-                    child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                    child: const Text('Revoke', style: TextStyle(color: Colors.red)),
                   );
                 } else {
                   return TextButton(
-                    child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                    child: const Text('Revoke', style: TextStyle(color: Colors.red)),
                     onPressed: () {
                       context.read<AdministrationBloc>().add(
-                        AdminRemoveGuard(id: id),
+                        AdminRemoveAdmin(email: email),
                       );
                     },
                   );
@@ -255,4 +271,57 @@ class _AllGuardScreenState extends State<AllGuardScreen> {
       },
     );
   }
+
+  // Future<void> _removeAdmin(String email) async {
+  //   if(!mounted) return;
+  //
+  //   showDialog(context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: const Text('Revoke Admin Privileges', style: TextStyle(color: Colors.red)),
+  //         content: const Text('Are you sure you want to revoke admin privileges from this user? They will lose access to admin-level features and permissions.'),
+  //         actions: [
+  //           TextButton(
+  //             child: const Text('Cancel'),
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //             },
+  //           ),
+  //           BlocBuilder<AdministrationBloc, AdministrationState>(
+  //             builder: (context, state) {
+  //               if (state is AdminRemoveAdminLoading) {
+  //                 return const CircularProgressIndicator();
+  //               } else if (state is AdminRemoveAdminFailure) {
+  //                 return TextButton(
+  //                   child: const Text('Revoke', style: TextStyle(color: Colors.red),),
+  //                   onPressed: () {
+  //                     context.read<AdministrationBloc>().add(AdminRemoveAdmin(email: email));
+  //                   },
+  //                 );
+  //               }else if (state is AdminRemoveAdminSuccess) {
+  //                 onPressed(){
+  //                   context.read<AdministrationBloc>().add(AdminGetSocietyAdmin());
+  //                   Navigator.of(context).pop();
+  //                 }
+  //                 return TextButton(
+  //                   onPressed: onPressed(),
+  //                   child: const Text('Revoke', style: TextStyle(color: Colors.red)),
+  //                 );
+  //               } else {
+  //                 return TextButton(
+  //                   child: const Text('Revoke', style: TextStyle(color: Colors.red)),
+  //                   onPressed: () {
+  //                     context.read<AdministrationBloc>().add(
+  //                       AdminRemoveGuard(id: email),
+  //                     );
+  //                   },
+  //                 );
+  //               }
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 }

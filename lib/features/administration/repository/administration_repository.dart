@@ -78,10 +78,7 @@ class AdministrationRepository {
     }
   }
 
-  Future<Map<String, dynamic>> verifyResidentRequest(
-      {required String requestId,
-      required String user,
-      required String residentStatus}) async {
+  Future<Map<String, dynamic>> verifyResidentRequest({required String requestId, required String user, required String residentStatus}) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? accessToken = prefs.getString('accessToken');
@@ -119,10 +116,7 @@ class AdministrationRepository {
     }
   }
 
-  Future<Map<String, dynamic>> verifyGuardRequest(
-      {required String requestId,
-      required String user,
-      required String guardStatus}) async {
+  Future<Map<String, dynamic>> verifyGuardRequest({required String requestId, required String user, required String guardStatus}) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? accessToken = prefs.getString('accessToken');
@@ -213,6 +207,184 @@ class AdministrationRepository {
         return (jsonBody['data'] as List)
             .map((data) => SocietyGuard.fromJson(data))
             .toList();
+      } else {
+        throw ApiError(
+            statusCode: response.statusCode, message: jsonBody['message']);
+      }
+    } catch (e) {
+      if (e is ApiError) {
+        throw ApiError(statusCode: e.statusCode, message: e.message);
+      } else {
+        throw ApiError(message: e.toString());
+      }
+    }
+  }
+
+  Future<List<SocietyMember>> getAllAdmin() async {
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? accessToken = prefs.getString('accessToken');
+
+      const apiUrl =
+          'http://192.168.194.221:8000/api/v1/admin/get-admins';
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+      final jsonBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return (jsonBody['data'] as List)
+            .map((data) => SocietyMember.fromJson(data))
+            .toList();
+      } else {
+        throw ApiError(
+            statusCode: response.statusCode, message: jsonBody['message']);
+      }
+    } catch (e) {
+      if (e is ApiError) {
+        throw ApiError(statusCode: e.statusCode, message: e.message);
+      } else {
+        throw ApiError(message: e.toString());
+      }
+    }
+  }
+
+  Future<Map<String, dynamic>> createAdmin({required String email}) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? accessToken = prefs.getString('accessToken');
+
+      final Map<String, dynamic> data = {
+        'email': email,
+      };
+
+      const apiUrl =
+          'http://192.168.194.221:8000/api/v1/admin/make-admin';
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(data),
+      );
+      final jsonBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return jsonBody;
+      } else {
+        throw ApiError(
+            statusCode: response.statusCode, message: jsonBody['message']);
+      }
+    } catch (e) {
+      if (e is ApiError) {
+        throw ApiError(statusCode: e.statusCode, message: e.message);
+      } else {
+        throw ApiError(message: e.toString());
+      }
+    }
+  }
+
+  Future<Map<String, dynamic>> removeAdmin({required String email}) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? accessToken = prefs.getString('accessToken');
+
+      final Map<String, dynamic> data = {
+        'email': email,
+      };
+
+      const apiUrl =
+          'http://192.168.194.221:8000/api/v1/admin/remove-admin';
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(data),
+      );
+      final jsonBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return jsonBody;
+      } else {
+        throw ApiError(
+            statusCode: response.statusCode, message: jsonBody['message']);
+      }
+    } catch (e) {
+      if (e is ApiError) {
+        throw ApiError(statusCode: e.statusCode, message: e.message);
+      } else {
+        throw ApiError(message: e.toString());
+      }
+    }
+  }
+
+  Future<Map<String, dynamic>> removeResident({required String id}) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? accessToken = prefs.getString('accessToken');
+
+      final Map<String, dynamic> data = {
+        'id': id,
+      };
+
+      const apiUrl =
+          'http://192.168.194.221:8000/api/v1/admin/remove-resident';
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(data),
+      );
+      final jsonBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return jsonBody;
+      } else {
+        throw ApiError(
+            statusCode: response.statusCode, message: jsonBody['message']);
+      }
+    } catch (e) {
+      if (e is ApiError) {
+        throw ApiError(statusCode: e.statusCode, message: e.message);
+      } else {
+        throw ApiError(message: e.toString());
+      }
+    }
+  }
+
+  Future<Map<String, dynamic>> removeGuard({required String id}) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? accessToken = prefs.getString('accessToken');
+
+      final Map<String, dynamic> data = {
+        'id': id,
+      };
+
+      const apiUrl =
+          'http://192.168.194.221:8000/api/v1/admin/remove-guard';
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(data),
+      );
+      final jsonBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return jsonBody;
       } else {
         throw ApiError(
             statusCode: response.statusCode, message: jsonBody['message']);

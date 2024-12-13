@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:gate_guard/features/administration/screens/all_admin_screen.dart';
 import 'package:gate_guard/features/administration/screens/all_guard_screen.dart';
 import 'package:gate_guard/features/administration/screens/all_resident_screen.dart';
+import 'package:gate_guard/features/administration/screens/manage_resident_screen.dart';
 import 'package:gate_guard/features/approval_screens/screens/delivery_approval_inside.dart';
 import 'package:gate_guard/features/approval_screens/screens/delivery_approval_screen.dart';
 import 'package:gate_guard/features/approval_screens/screens/verification_pending_screen.dart';
@@ -135,6 +137,10 @@ class AppRoutes {
         return _materialRoute( const AllResidentScreen());
       case '/all-guard-screen':
         return _materialRoute( const AllGuardScreen());
+      case '/all-admin-screen':
+        return _materialRoute( const AllAdminScreen());
+      case '/manage-resident-screen':
+        return _materialRoute( const ManageResidentScreen());
       default:
         return _materialRoute(const SplashScreen());
     }

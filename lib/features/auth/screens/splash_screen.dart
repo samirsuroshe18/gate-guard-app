@@ -29,7 +29,7 @@ class _SplashScreenState extends State<SplashScreen> {
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state){
           if(state is AuthGetUserSuccess){
-            if(state.response.phoneNo == null){
+            if(state.response.phoneNo == null && state.response.isUserTypeVerified==false){
               Navigator.pushNamedAndRemoveUntil(context, '/user-input', (Route<dynamic> route) => false);
             }else if(state.response.role=='admin'){
               Navigator.pushNamedAndRemoveUntil(context, '/admin-home', (Route<dynamic> route) => false);

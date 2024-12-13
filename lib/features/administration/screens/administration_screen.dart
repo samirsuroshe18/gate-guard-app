@@ -39,7 +39,7 @@ class _AdministrationScreenState extends State<AdministrationScreen> {
             icon: Icons.people,
             title: 'Manage Residents',
             onDashboard: () {
-              Navigator.pushNamed(context, '/all-resident-screen');
+              Navigator.pushNamed(context, '/manage-resident-screen');
             },
           ),
           const SizedBox(height: 16.0),
