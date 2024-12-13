@@ -18,6 +18,7 @@ class _AllResidentScreenState extends State<AllResidentScreen> {
   List<SocietyMember> filteredResidents = [];
   String searchQuery = '';
   bool _isLoading = false;
+  bool _isError = false;
 
   @override
   void initState() {
@@ -60,20 +61,20 @@ class _AllResidentScreenState extends State<AllResidentScreen> {
           listener: (context, state){
             if (state is AdminGetSocietyMemberLoading) {
               _isLoading = true;
+              _isError = false;
             }
             if (state is AdminGetSocietyMemberSuccess) {
               _isLoading = false;
+              _isError = false;
               data = state.response;
               filteredResidents = data;
             }
             if (state is AdminGetSocietyMemberFailure) {
               _isLoading = false;
+              _isError = true;
+              filteredResidents = [];
             }
-            // if (state is AdminCreateAdminLoading) {
-            //   _isLoading = true;
-            // }
             if (state is AdminCreateAdminSuccess) {
-              // _isLoading = false;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.response['message']!),
@@ -81,12 +82,33 @@ class _AllResidentScreenState extends State<AllResidentScreen> {
                 ),
               );
             }
-            // if (state is AdminCreateAdminFailure) {
-            //   _isLoading = false;
-            // }
+            if (state is AdminCreateAdminFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.redAccent,
+                ),
+              );
+            }
+            if (state is AdminRemoveResidentSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.response['message']!),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+            if (state is AdminRemoveResidentFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.redAccent,
+                ),
+              );
+            }
           },
           builder: (context, state){
-            if(data.isNotEmpty && _isLoading == false) {
+            if(filteredResidents.isNotEmpty && _isLoading == false) {
               return RefreshIndicator(
                 onRefresh: _refreshUserData,  // Method to refresh user data
                 child: Column(
@@ -183,7 +205,7 @@ class _AllResidentScreenState extends State<AllResidentScreen> {
                   fit: BoxFit.contain,
                 ),
               );
-            }else {
+            } else if (filteredResidents.isEmpty && _isError == true) {
               return RefreshIndicator(
                 onRefresh: _refreshUserData,
                 child: SingleChildScrollView(
@@ -203,6 +225,34 @@ class _AllResidentScreenState extends State<AllResidentScreen> {
                         const SizedBox(height: 20),
                         const Text(
                           "Something went wrong!",
+                          style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            } else {
+              return RefreshIndicator(
+                onRefresh: _refreshUserData,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Container(
+                    height: MediaQuery.of(context).size.height - 200,
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Lottie.asset(
+                          'assets/animations/no_data.json',
+                          width: 200,
+                          height: 200,
+                          fit: BoxFit.cover,
+                        ),
+                        const SizedBox(height: 20),
+                        const Text(
+                          "There are no residents.",
                           style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),

@@ -18,6 +18,7 @@ class _AllGuardScreenState extends State<AllGuardScreen> {
   List<SocietyGuard> filteredGuards = [];
   String searchQuery = '';
   bool _isLoading = false;
+  bool _isError = false;
 
   @override
   void initState() {
@@ -60,14 +61,34 @@ class _AllGuardScreenState extends State<AllGuardScreen> {
           listener: (context, state){
             if (state is AdminGetSocietyGuardLoading) {
               _isLoading = true;
+              _isError = false;
             }
             if (state is AdminGetSocietyGuardSuccess) {
               _isLoading = false;
+              _isError = false;
               data = state.response;
               filteredGuards = data;
             }
             if (state is AdminGetSocietyGuardFailure) {
               _isLoading = false;
+              _isError = true;
+              filteredGuards = [];
+            }
+            if (state is AdminRemoveGuardSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.response['message']!),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+            if (state is AdminRemoveGuardFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.redAccent,
+                ),
+              );
             }
           },
           builder: (context, state){
@@ -156,7 +177,7 @@ class _AllGuardScreenState extends State<AllGuardScreen> {
                   fit: BoxFit.contain,
                 ),
               );
-            }else {
+            } else if (filteredGuards.isEmpty && _isError == true) {
               return RefreshIndicator(
                 onRefresh: _refreshUserData,
                 child: SingleChildScrollView(
@@ -176,6 +197,34 @@ class _AllGuardScreenState extends State<AllGuardScreen> {
                         const SizedBox(height: 20),
                         const Text(
                           "Something went wrong!",
+                          style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            } else {
+              return RefreshIndicator(
+                onRefresh: _refreshUserData,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Container(
+                    height: MediaQuery.of(context).size.height - 200,
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Lottie.asset(
+                          'assets/animations/no_data.json',
+                          width: 200,
+                          height: 200,
+                          fit: BoxFit.cover,
+                        ),
+                        const SizedBox(height: 20),
+                        const Text(
+                          "There are no guards",
                           style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),

@@ -16,6 +16,7 @@ class CabTab extends StatefulWidget {
 class _CabTabState extends State<CabTab> with AutomaticKeepAliveClientMixin {
   final TextEditingController searchController = TextEditingController();
   bool _isLoading = false;
+  bool _isError = false;
   List<Entry> data = [];
 
   @override
@@ -32,13 +33,16 @@ class _CabTabState extends State<CabTab> with AutomaticKeepAliveClientMixin {
         listener: (context, state) {
           if (state is ExitGetCabEntriesLoading) {
             _isLoading = true;
+            _isError = false;
           }
           if (state is ExitGetCabEntriesSuccess) {
             _isLoading = false;
+            _isError = false;
             data = state.response;
           }
           if (state is ExitGetCabEntriesFailure) {
             _isLoading = false;
+            _isError = true;
             data = [];
           }
         },
@@ -66,6 +70,34 @@ class _CabTabState extends State<CabTab> with AutomaticKeepAliveClientMixin {
                 width: 100,
                 height: 100,
                 fit: BoxFit.contain,
+              ),
+            );
+          } else if (data.isEmpty && _isError == true) {
+            return RefreshIndicator(
+              onRefresh: _refresh,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Container(
+                  height: MediaQuery.of(context).size.height - 200,
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Lottie.asset(
+                        'assets/animations/error.json',
+                        width: 200,
+                        height: 200,
+                        fit: BoxFit.cover,
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        "Something went wrong!",
+                        style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             );
           } else {

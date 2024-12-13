@@ -16,6 +16,7 @@ class ApartmentMembersScreen extends StatefulWidget {
 class _ApartmentMembersScreenState extends State<ApartmentMembersScreen> {
   List<Member> data = [];
   bool _isLoading = false;
+  bool _isError = false;
 
   @override
   void initState() {
@@ -42,19 +43,23 @@ class _ApartmentMembersScreenState extends State<ApartmentMembersScreen> {
         listener: (context, state){
           if (state is GetApartmentMembersLoading) {
             _isLoading = true;
+            _isError = false;
           }
           if (state is GetApartmentMembersSuccess) {
             _isLoading = false;
+            _isError = false;
             data = state.response;
           }
           if (state is GetApartmentMembersFailure) {
             _isLoading = false;
+            _isError = true;
+            data = [];
           }
         },
         builder: (context, state){
           if(data.isNotEmpty && _isLoading == false) {
             return RefreshIndicator(
-              onRefresh: _refreshUserData,  // Method to refresh user data
+              onRefresh: _onRefresh,  // Method to refresh user data
               child: ListView.builder(
                 itemCount: data.length,
                 padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
@@ -90,9 +95,9 @@ class _ApartmentMembersScreenState extends State<ApartmentMembersScreen> {
                 fit: BoxFit.contain,
               ),
             );
-          }else {
+          } else if (data.isEmpty && _isError == true) {
             return RefreshIndicator(
-              onRefresh: _refreshUserData,
+              onRefresh: _onRefresh,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: Container(
@@ -118,13 +123,41 @@ class _ApartmentMembersScreenState extends State<ApartmentMembersScreen> {
                 ),
               ),
             );
+          } else {
+            return RefreshIndicator(
+              onRefresh: _onRefresh,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Container(
+                  height: MediaQuery.of(context).size.height - 200,
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Lottie.asset(
+                        'assets/animations/no_data.json',
+                        width: 200,
+                        height: 200,
+                        fit: BoxFit.cover,
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        "There is no apartment members",
+                        style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
           }
         },
       )
     );
   }
 
-  Future<void> _refreshUserData() async {
+  Future<void> _onRefresh() async {
     context.read<ResidentProfileBloc>().add(GetApartmentMembers());
   }
 

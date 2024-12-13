@@ -18,6 +18,7 @@ class _GuestTabState extends State<GuestTab>
   final TextEditingController searchController = TextEditingController();
   List<Entry> data = [];
   bool _isLoading = false;
+  bool _isError = false;
 
   @override
   void initState() {
@@ -33,14 +34,17 @@ class _GuestTabState extends State<GuestTab>
         listener: (context, state) {
           if (state is ExitGetGuestEntriesLoading) {
             _isLoading = true;
+            _isError = false;
           }
           if (state is ExitGetGuestEntriesSuccess) {
             data = state.response;
             _isLoading = false;
+            _isError = false;
           }
           if (state is ExitGetGuestEntriesFailure) {
             data = [];
             _isLoading = false;
+            _isError = true;
           }
         },
         builder: (context, state) {
@@ -65,6 +69,34 @@ class _GuestTabState extends State<GuestTab>
                 width: 100,
                 height: 100,
                 fit: BoxFit.contain,
+              ),
+            );
+          } else if (data.isEmpty && _isError == true) {
+            return RefreshIndicator(
+              onRefresh: _refresh,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Container(
+                  height: MediaQuery.of(context).size.height - 200,
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Lottie.asset(
+                        'assets/animations/error.json',
+                        width: 200,
+                        height: 200,
+                        fit: BoxFit.cover,
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        "Something went wrong!",
+                        style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             );
           } else {

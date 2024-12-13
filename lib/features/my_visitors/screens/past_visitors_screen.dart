@@ -17,6 +17,7 @@ class _PastVisitorsScreenState extends State<PastVisitorsScreen>
     with AutomaticKeepAliveClientMixin {
   List<Entry> data = [];
   bool _isLoading = false;
+  bool _isError = false;
 
   @override
   void initState() {
@@ -32,14 +33,17 @@ class _PastVisitorsScreenState extends State<PastVisitorsScreen>
       listener: (context, state) {
         if (state is GetPastEntriesLoading) {
           _isLoading = true;
+          _isError = false;
         }
         if (state is GetPastEntriesSuccess) {
           data = state.response;
           _isLoading = false;
+          _isError = false;
         }
         if (state is GetPastEntriesFailure) {
           data = [];
           _isLoading = false;
+          _isError = true;
         }
       },
       builder: (context, state) {
@@ -61,6 +65,34 @@ class _PastVisitorsScreenState extends State<PastVisitorsScreen>
               width: 100,
               height: 100,
               fit: BoxFit.contain,
+            ),
+          );
+        } else if (data.isEmpty && _isError == true) {
+          return RefreshIndicator(
+            onRefresh: _onRefresh,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Container(
+                height: MediaQuery.of(context).size.height - 200,
+                alignment: Alignment.center,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Lottie.asset(
+                      'assets/animations/error.json',
+                      width: 200,
+                      height: 200,
+                      fit: BoxFit.cover,
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      "Something went wrong!",
+                      style:
+                      TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
             ),
           );
         } else {

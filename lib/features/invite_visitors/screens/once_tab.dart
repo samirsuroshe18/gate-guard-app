@@ -59,6 +59,12 @@ class _OnceTabState extends State<OnceTab> {
         }
         if (state is AddPreApproveEntryFailure) {
           _isLoading = false;
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(
+            content: Text(state.message),
+            duration: const Duration(seconds: 3),
+            backgroundColor: Colors.redAccent,
+          ));
         }
         if (state is AddPreApproveEntrySuccess) {
           _isLoading = false;

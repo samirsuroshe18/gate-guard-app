@@ -17,6 +17,7 @@ class _ExpectedVisitorsScreenState extends State<ExpectedVisitorsScreen>
     with AutomaticKeepAliveClientMixin {
   List<PreApprovedBanner> data = [];
   bool _isLoading = false;
+  bool _isError = false;
 
   @override
   void initState() {
@@ -32,20 +33,23 @@ class _ExpectedVisitorsScreenState extends State<ExpectedVisitorsScreen>
         listener: (context, state) {
           if (state is GetExpectedEntriesLoading) {
             _isLoading = true;
+            _isError = false;
           }
           if (state is GetExpectedEntriesSuccess) {
             data = state.response;
             _isLoading = false;
+            _isError = false;
           }
           if (state is GetExpectedEntriesFailure) {
             data = [];
             _isLoading = false;
+            _isError = true;
           }
         },
         builder: (context, state) {
           if (data.isNotEmpty && _isLoading == false) {
             return RefreshIndicator(
-              onRefresh: _fetchData,
+              onRefresh: _onRefresh,
               child: ListView.builder(
                 itemCount: data.length,
                 padding: const EdgeInsets.all(8.0),
@@ -76,9 +80,37 @@ class _ExpectedVisitorsScreenState extends State<ExpectedVisitorsScreen>
                 fit: BoxFit.contain,
               ),
             );
+          } else if (data.isEmpty && _isError == true) {
+            return RefreshIndicator(
+              onRefresh: _onRefresh,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Container(
+                  height: MediaQuery.of(context).size.height - 200,
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Lottie.asset(
+                        'assets/animations/error.json',
+                        width: 200,
+                        height: 200,
+                        fit: BoxFit.cover,
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        "Something went wrong!",
+                        style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
           } else {
             return RefreshIndicator(
-              onRefresh: _fetchData,
+              onRefresh: _onRefresh,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: Container(
@@ -110,7 +142,7 @@ class _ExpectedVisitorsScreenState extends State<ExpectedVisitorsScreen>
     );
   }
 
-  Future<void> _fetchData() async {
+  Future<void> _onRefresh() async {
     context.read<MyVisitorsBloc>().add(GetExpectedEntries());
   }
 

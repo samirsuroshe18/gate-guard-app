@@ -20,6 +20,7 @@ class _CurrentVisitorsScreenState extends State<CurrentVisitorsScreen>
   ReceivedAction? initialAction;
   List<Entry> data = [];
   bool _isLoading = false;
+  bool _isError = false;
 
   void getInitialAction() async {
     initialAction = NotificationController.initialAction;
@@ -64,22 +65,23 @@ class _CurrentVisitorsScreenState extends State<CurrentVisitorsScreen>
     return Scaffold(
         body: BlocConsumer<MyVisitorsBloc, MyVisitorsState>(
       listener: (context, state) {
-        if (state is GetServiceRequestSuccess) {}
         if (state is GetServiceRequestSuccess) {
           Navigator.pushNamed(context, '/delivery-approval-inside',
               arguments: state.response);
         }
-        if (state is GetServiceRequestFailure) {}
         if (state is GetCurrentEntriesLoading) {
           _isLoading = true;
+          _isError = false;
         }
         if (state is GetCurrentEntriesSuccess) {
           data = state.response;
           _isLoading = false;
+          _isError = false;
         }
         if (state is GetCurrentEntriesFailure) {
           data = [];
           _isLoading = false;
+          _isError = true;
         }
       },
       builder: (context, state) {
@@ -101,6 +103,34 @@ class _CurrentVisitorsScreenState extends State<CurrentVisitorsScreen>
               width: 100,
               height: 100,
               fit: BoxFit.contain,
+            ),
+          );
+        } else if (data.isEmpty && _isError == true) {
+          return RefreshIndicator(
+            onRefresh: _onRefresh,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Container(
+                height: MediaQuery.of(context).size.height - 200,
+                alignment: Alignment.center,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Lottie.asset(
+                      'assets/animations/error.json',
+                      width: 200,
+                      height: 200,
+                      fit: BoxFit.cover,
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      "Something went wrong!",
+                      style:
+                      TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
             ),
           );
         } else {

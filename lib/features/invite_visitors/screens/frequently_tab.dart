@@ -96,6 +96,12 @@ class _FrequentlyTabState extends State<FrequentlyTab> {
         }
         if (state is AddPreApproveEntryFailure) {
           _isLoading = false;
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(
+            content: Text(state.message),
+            duration: const Duration(seconds: 3),
+            backgroundColor: Colors.redAccent,
+          ));
         }
       },
       builder: (context, state) {

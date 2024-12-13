@@ -15,9 +15,10 @@ class AllAdminScreen extends StatefulWidget {
 
 class _AllAdminScreenState extends State<AllAdminScreen> {
   List<SocietyMember> data = [];
-  List<SocietyMember> filteredResidents = [];
+  List<SocietyMember> filteredAdmin = [];
   String searchQuery = '';
   bool _isLoading = false;
+  bool _isError = false;
 
   @override
   void initState() {
@@ -41,7 +42,7 @@ class _AllAdminScreenState extends State<AllAdminScreen> {
     }).toList();
 
     setState(() {
-      filteredResidents = filtered;
+      filteredAdmin = filtered;
       searchQuery = query;
     });
   }
@@ -60,21 +61,20 @@ class _AllAdminScreenState extends State<AllAdminScreen> {
           listener: (context, state){
             if (state is AdminGetSocietyAdminLoading) {
               _isLoading = true;
+              _isError = false;
             }
             if (state is AdminGetSocietyAdminSuccess) {
               _isLoading = false;
+              _isError = false;
               data = state.response;
-              filteredResidents = data;
+              filteredAdmin = data;
             }
             if (state is AdminGetSocietyAdminFailure) {
               _isLoading = false;
-              filteredResidents = [];
+              _isError = true;
+              filteredAdmin = [];
             }
-            // if (state is AdminRemoveAdminLoading) {
-            //   _isLoading = true;
-            // }
             if (state is AdminRemoveAdminSuccess) {
-              // _isLoading = false;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.response['message']!),
@@ -82,12 +82,17 @@ class _AllAdminScreenState extends State<AllAdminScreen> {
                 ),
               );
             }
-            // if (state is AdminRemoveAdminFailure) {
-            //   _isLoading = false;
-            // }
+            if (state is AdminRemoveAdminFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.redAccent,
+                ),
+              );
+            }
           },
           builder: (context, state){
-            if(filteredResidents.isNotEmpty && _isLoading == false) {
+            if(filteredAdmin.isNotEmpty && _isLoading == false) {
               return RefreshIndicator(
                 onRefresh: _refreshUserData,  // Method to refresh user data
                 child: Column(
@@ -109,10 +114,10 @@ class _AllAdminScreenState extends State<AllAdminScreen> {
                     ),
                     Expanded(
                       child: ListView.builder(
-                        itemCount: filteredResidents.length,
+                        itemCount: filteredAdmin.length,
                         padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
                         itemBuilder: (context, index) {
-                          final member = filteredResidents[index];
+                          final member = filteredAdmin[index];
                           return Card(
                             child: ListTile(
                               leading: CircleAvatar(
@@ -172,7 +177,35 @@ class _AllAdminScreenState extends State<AllAdminScreen> {
                   fit: BoxFit.contain,
                 ),
               );
-            }else {
+            } else if (filteredAdmin.isEmpty && _isError == true) {
+              return RefreshIndicator(
+                onRefresh: _refreshUserData,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Container(
+                    height: MediaQuery.of(context).size.height - 200,
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Lottie.asset(
+                          'assets/animations/error.json',
+                          width: 200,
+                          height: 200,
+                          fit: BoxFit.cover,
+                        ),
+                        const SizedBox(height: 20),
+                        const Text(
+                          "Something went wrong!",
+                          style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            } else {
               return RefreshIndicator(
                 onRefresh: _refreshUserData,
                 child: SingleChildScrollView(
@@ -191,7 +224,7 @@ class _AllAdminScreenState extends State<AllAdminScreen> {
                         ),
                         const SizedBox(height: 20),
                         const Text(
-                          "There is no admin",
+                          "There are no admin",
                           style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),
