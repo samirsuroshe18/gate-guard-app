@@ -221,13 +221,12 @@ class AdministrationRepository {
   }
 
   Future<List<SocietyMember>> getAllAdmin() async {
-
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? accessToken = prefs.getString('accessToken');
 
       const apiUrl =
-          'http://192.168.194.221:8000/api/v1/admin/get-admins';
+          'https://invite.iotsense.in/api/v1/admin/get-admins';
       final response = await http.get(
         Uri.parse(apiUrl),
         headers: <String, String>{
@@ -264,7 +263,7 @@ class AdministrationRepository {
       };
 
       const apiUrl =
-          'http://192.168.194.221:8000/api/v1/admin/make-admin';
+          'https://invite.iotsense.in/api/v1/admin/make-admin';
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: <String, String>{
@@ -300,7 +299,7 @@ class AdministrationRepository {
       };
 
       const apiUrl =
-          'http://192.168.194.221:8000/api/v1/admin/remove-admin';
+          'https://invite.iotsense.in/api/v1/admin/remove-admin';
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: <String, String>{
@@ -336,7 +335,7 @@ class AdministrationRepository {
       };
 
       const apiUrl =
-          'http://192.168.194.221:8000/api/v1/admin/remove-resident';
+          'https://invite.iotsense.in/api/v1/admin/remove-resident';
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: <String, String>{
@@ -372,7 +371,7 @@ class AdministrationRepository {
       };
 
       const apiUrl =
-          'http://192.168.194.221:8000/api/v1/admin/remove-guard';
+          'https://invite.iotsense.in/api/v1/admin/remove-guard';
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: <String, String>{

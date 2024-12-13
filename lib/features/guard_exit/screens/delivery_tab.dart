@@ -18,6 +18,7 @@ class _DeliveryTabState extends State<DeliveryTab>
   final TextEditingController searchController = TextEditingController();
   bool _isLoading = false;
   bool _isError = false;
+  int? statusCode;
   List<Entry> data = [];
 
   @override
@@ -44,6 +45,7 @@ class _DeliveryTabState extends State<DeliveryTab>
           if (state is ExitGetDeliveryEntriesFailure) {
             _isLoading = false;
             _isError = true;
+            statusCode = state.status;
             data = [];
           }
         },
@@ -73,7 +75,7 @@ class _DeliveryTabState extends State<DeliveryTab>
                 fit: BoxFit.contain,
               ),
             );
-          } else if (data.isEmpty && _isError == true) {
+          } else if (data.isEmpty && _isError == true && statusCode == 401) {
             return RefreshIndicator(
               onRefresh: _refresh,
               child: SingleChildScrollView(

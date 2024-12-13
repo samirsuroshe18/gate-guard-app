@@ -18,6 +18,7 @@ class _DeniedVisitorsScreenState extends State<DeniedVisitorsScreen>
   List<Entry> data = [];
   bool _isLoading = false;
   bool _isError = false;
+  int? statusCode;
 
   @override
   void initState() {
@@ -44,6 +45,7 @@ class _DeniedVisitorsScreenState extends State<DeniedVisitorsScreen>
           data = [];
           _isLoading = false;
           _isError = true;
+          statusCode = state. status;
         }
       },
       builder: (context, state) {
@@ -67,7 +69,7 @@ class _DeniedVisitorsScreenState extends State<DeniedVisitorsScreen>
               fit: BoxFit.contain,
             ),
           );
-        } else if (data.isEmpty && _isError == true) {
+        } else if (data.isEmpty && _isError == true && statusCode == 401) {
           return RefreshIndicator(
             onRefresh: _onRefresh,
             child: SingleChildScrollView(

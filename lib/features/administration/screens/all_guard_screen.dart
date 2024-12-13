@@ -19,6 +19,7 @@ class _AllGuardScreenState extends State<AllGuardScreen> {
   String searchQuery = '';
   bool _isLoading = false;
   bool _isError = false;
+  int? statusCode;
 
   @override
   void initState() {
@@ -73,6 +74,7 @@ class _AllGuardScreenState extends State<AllGuardScreen> {
               _isLoading = false;
               _isError = true;
               filteredGuards = [];
+              statusCode = state.status;
             }
             if (state is AdminRemoveGuardSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -131,7 +133,7 @@ class _AllGuardScreenState extends State<AllGuardScreen> {
                               trailing: PopupMenuButton<String>(
                                 onSelected: (value) {
                                   if (value == 'delete') {
-                                    _deleteGuard(member.user?.email ?? "");
+                                    _deleteGuard(member.user?.id ?? "");
                                   } else if(value == 'call'){
                                     _makePhoneCall(member.user?.phoneNo ?? "");
                                   }
@@ -177,7 +179,7 @@ class _AllGuardScreenState extends State<AllGuardScreen> {
                   fit: BoxFit.contain,
                 ),
               );
-            } else if (filteredGuards.isEmpty && _isError == true) {
+            } else if (filteredGuards.isEmpty && _isError == true && statusCode == 401) {
               return RefreshIndicator(
                 onRefresh: _refreshUserData,
                 child: SingleChildScrollView(

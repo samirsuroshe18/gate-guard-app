@@ -16,6 +16,7 @@ class _CheckoutHistoryScreenState extends State<CheckoutHistoryScreen> {
   List<CheckoutHistory> data = [];
   bool _isLoading = false;
   bool _isError = false;
+  int? statusCode;
 
   @override
   void initState() {
@@ -50,6 +51,7 @@ class _CheckoutHistoryScreenState extends State<CheckoutHistoryScreen> {
               data = [];
               _isLoading = false;
               _isError = true;
+              statusCode = state.status;
             }
           },
           builder: (context, state) {
@@ -73,7 +75,7 @@ class _CheckoutHistoryScreenState extends State<CheckoutHistoryScreen> {
                   fit: BoxFit.contain,
                 ),
               );
-            } else if (data.isEmpty && _isError == true) {
+            } else if (data.isEmpty && _isError == true && statusCode == 401) {
               return RefreshIndicator(
                 onRefresh: _onRefresh,
                 child: SingleChildScrollView(

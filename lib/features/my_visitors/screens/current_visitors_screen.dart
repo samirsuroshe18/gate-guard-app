@@ -21,6 +21,7 @@ class _CurrentVisitorsScreenState extends State<CurrentVisitorsScreen>
   List<Entry> data = [];
   bool _isLoading = false;
   bool _isError = false;
+  int? statusCode;
 
   void getInitialAction() async {
     initialAction = NotificationController.initialAction;
@@ -82,6 +83,7 @@ class _CurrentVisitorsScreenState extends State<CurrentVisitorsScreen>
           data = [];
           _isLoading = false;
           _isError = true;
+          statusCode = state.status;
         }
       },
       builder: (context, state) {
@@ -105,7 +107,7 @@ class _CurrentVisitorsScreenState extends State<CurrentVisitorsScreen>
               fit: BoxFit.contain,
             ),
           );
-        } else if (data.isEmpty && _isError == true) {
+        } else if (data.isEmpty && _isError == true && statusCode == 401) {
           return RefreshIndicator(
             onRefresh: _onRefresh,
             child: SingleChildScrollView(

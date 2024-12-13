@@ -19,6 +19,7 @@ class _AllResidentScreenState extends State<AllResidentScreen> {
   String searchQuery = '';
   bool _isLoading = false;
   bool _isError = false;
+  int? statusCode;
 
   @override
   void initState() {
@@ -73,6 +74,7 @@ class _AllResidentScreenState extends State<AllResidentScreen> {
               _isLoading = false;
               _isError = true;
               filteredResidents = [];
+              statusCode = state.status;
             }
             if (state is AdminCreateAdminSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -205,7 +207,7 @@ class _AllResidentScreenState extends State<AllResidentScreen> {
                   fit: BoxFit.contain,
                 ),
               );
-            } else if (filteredResidents.isEmpty && _isError == true) {
+            } else if (filteredResidents.isEmpty && _isError == true && statusCode == 401) {
               return RefreshIndicator(
                 onRefresh: _refreshUserData,
                 child: SingleChildScrollView(

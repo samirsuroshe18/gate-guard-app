@@ -17,6 +17,7 @@ class _CabTabState extends State<CabTab> with AutomaticKeepAliveClientMixin {
   final TextEditingController searchController = TextEditingController();
   bool _isLoading = false;
   bool _isError = false;
+  int? statusCode;
   List<Entry> data = [];
 
   @override
@@ -43,6 +44,7 @@ class _CabTabState extends State<CabTab> with AutomaticKeepAliveClientMixin {
           if (state is ExitGetCabEntriesFailure) {
             _isLoading = false;
             _isError = true;
+            statusCode = state.status;
             data = [];
           }
         },
@@ -72,7 +74,7 @@ class _CabTabState extends State<CabTab> with AutomaticKeepAliveClientMixin {
                 fit: BoxFit.contain,
               ),
             );
-          } else if (data.isEmpty && _isError == true) {
+          } else if (data.isEmpty && _isError == true && statusCode == 401) {
             return RefreshIndicator(
               onRefresh: _refresh,
               child: SingleChildScrollView(

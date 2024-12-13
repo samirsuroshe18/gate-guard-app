@@ -18,6 +18,7 @@ class _AllTabState extends State<AllTab> with AutomaticKeepAliveClientMixin {
   List<Entry> data = [];
   bool _isLoading = false;
   bool _isError = false;
+  int? statusCode;
 
   @override
   void initState() {
@@ -43,6 +44,7 @@ class _AllTabState extends State<AllTab> with AutomaticKeepAliveClientMixin {
           if (state is ExitGetAllowedEntriesFailure) {
             _isLoading = false;
             _isError = true;
+            statusCode = state.status;
             data = [];
           }
         },
@@ -69,7 +71,7 @@ class _AllTabState extends State<AllTab> with AutomaticKeepAliveClientMixin {
                 fit: BoxFit.contain,
               ),
             );
-          } else if (data.isEmpty && _isError == true) {
+          } else if (data.isEmpty && _isError == true && statusCode == 401) {
             return RefreshIndicator(
               onRefresh: _refresh,
               child: SingleChildScrollView(

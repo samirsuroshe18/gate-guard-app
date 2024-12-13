@@ -204,6 +204,7 @@ class _ResidentApprovalScreenState extends State<ResidentApprovalScreen> {
   List<Map<String, bool>> isLoadingList = [];
   bool _isLoading = false;
   bool _isError = false;
+  int? statusCode;
 
   @override
   void initState() {
@@ -240,16 +241,11 @@ class _ResidentApprovalScreenState extends State<ResidentApprovalScreen> {
             });
           }
           if (state is AdminGetPendingResidentReqFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.redAccent,
-              ),
-            );
             setState(() {
               _isLoading = false;
               _isError = true;
               data = [];
+              statusCode = state.status;
             });
           }
 
@@ -321,7 +317,7 @@ class _ResidentApprovalScreenState extends State<ResidentApprovalScreen> {
                 fit: BoxFit.contain,
               ),
             );
-          } else if (data.isEmpty && _isError == true) {
+          } else if (data.isEmpty && _isError == true && statusCode == 401) {
             return RefreshIndicator(
               onRefresh: _refreshUserData,
               child: SingleChildScrollView(

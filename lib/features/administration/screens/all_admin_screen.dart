@@ -19,6 +19,7 @@ class _AllAdminScreenState extends State<AllAdminScreen> {
   String searchQuery = '';
   bool _isLoading = false;
   bool _isError = false;
+  int? statusCode;
 
   @override
   void initState() {
@@ -73,6 +74,7 @@ class _AllAdminScreenState extends State<AllAdminScreen> {
               _isLoading = false;
               _isError = true;
               filteredAdmin = [];
+              statusCode = state.status;
             }
             if (state is AdminRemoveAdminSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -177,7 +179,7 @@ class _AllAdminScreenState extends State<AllAdminScreen> {
                   fit: BoxFit.contain,
                 ),
               );
-            } else if (filteredAdmin.isEmpty && _isError == true) {
+            } else if (filteredAdmin.isEmpty && _isError == true && statusCode == 401) {
               return RefreshIndicator(
                 onRefresh: _refreshUserData,
                 child: SingleChildScrollView(

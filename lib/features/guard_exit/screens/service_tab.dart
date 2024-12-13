@@ -18,6 +18,7 @@ class _ServiceTabState extends State<ServiceTab>
   final TextEditingController searchController = TextEditingController();
   bool _isLoading = false;
   bool _isError = false;
+  int? statusCode;
   List<Entry> data = [];
 
   @override
@@ -44,7 +45,12 @@ class _ServiceTabState extends State<ServiceTab>
           if (state is ExitGetServiceEntriesFailure) {
             _isLoading = false;
             _isError = true;
+            statusCode = state.status;
             data = [];
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.redAccent,
+            ));
           }
         },
         builder: (context, state) {
@@ -73,7 +79,7 @@ class _ServiceTabState extends State<ServiceTab>
                 fit: BoxFit.contain,
               ),
             );
-          } else if (data.isEmpty && _isError == true) {
+          } else if (data.isEmpty && _isError == true && statusCode == 401) {
             return RefreshIndicator(
               onRefresh: _refresh,
               child: SingleChildScrollView(

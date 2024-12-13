@@ -23,6 +23,7 @@ class VisitorPastCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(data.societyDetails?.societyApartments?.isEmpty);
     return Card(
       elevation: 4,
       margin: const EdgeInsets.all(10),
@@ -158,7 +159,8 @@ class VisitorPastCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Approved by ${data.approvedBy != null ? data.approvedBy?.user?.userName : data.societyDetails!.societyApartments![0].entryStatus!.approvedBy?.userName ?? 'No one'}',
+                        // 'Approved by ${data.approvedBy != null ? data.approvedBy?.user?.userName : data.societyDetails?.societyApartments?[0].entryStatus?.approvedBy?.userName ?? 'No one'}',
+                        'Approved by ${data.approvedBy != null ? data.approvedBy?.user?.userName : data.societyDetails!.societyApartments!.isEmpty ? 'No one' : data.societyDetails?.societyApartments?[0].entryStatus?.approvedBy?.userName}',
                         style: const TextStyle(
                           color: Colors.black54,
                           fontWeight: FontWeight.bold, // Made bold

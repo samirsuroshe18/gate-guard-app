@@ -19,6 +19,7 @@ class _GuestTabState extends State<GuestTab>
   List<Entry> data = [];
   bool _isLoading = false;
   bool _isError = false;
+  int? statusCode;
 
   @override
   void initState() {
@@ -45,6 +46,7 @@ class _GuestTabState extends State<GuestTab>
             data = [];
             _isLoading = false;
             _isError = true;
+            statusCode = state.status;
           }
         },
         builder: (context, state) {
@@ -71,7 +73,7 @@ class _GuestTabState extends State<GuestTab>
                 fit: BoxFit.contain,
               ),
             );
-          } else if (data.isEmpty && _isError == true) {
+          } else if (data.isEmpty && _isError == true && statusCode == 401) {
             return RefreshIndicator(
               onRefresh: _refresh,
               child: SingleChildScrollView(
